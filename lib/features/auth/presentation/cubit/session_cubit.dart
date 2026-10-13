@@ -23,17 +23,12 @@ class SessionState extends Equatable {
   final bool loading;
   final bool onboardingSeen;
 
-  /// True when backed by Supabase Auth (real accounts).
   final bool live;
 
-  /// The signed-in account (live mode only).
   final UserProfile? profile;
 
-  /// The user opened a password-reset link and must choose a new password.
   final bool recoveringPassword;
 
-  /// Live: the authenticated account. Local mode: the fixed demo identity for
-  /// the selected role (not authenticated).
   Actor? get actor {
     if (live) return profile?.actor;
     return role == null ? null : Actor.demoFor(role!);
@@ -55,8 +50,6 @@ class SessionCubit extends Cubit<SessionState> {
   final AuthRepository? _auth;
   StreamSubscription<AuthEvent>? _authSub;
 
-  /// True while an explicit sign-in/sign-up runs: its own role check decides
-  /// what to show, so the auth listener must not open a dashboard first.
   bool _authenticating = false;
 
   bool get isLive => _auth != null;
@@ -72,7 +65,6 @@ class SessionCubit extends Cubit<SessionState> {
     try {
       profile = await _auth.restore();
     } catch (_) {
-      // Expired session, missing profile or offline: show sign-in.
       profile = null;
     }
     _emitLive(profile, onboardingSeen: seen);
@@ -83,7 +75,6 @@ class SessionCubit extends Cubit<SessionState> {
     emit(_copy(onboardingSeen: true));
   }
 
-  /// Local preview mode only — picking a role is never authorization.
   Future<void> enterDemo(AppRole role) async {
     if (isLive) {
       throw const WorkflowException('Sign in with your account.');
@@ -93,9 +84,6 @@ class SessionCubit extends Cubit<SessionState> {
     emit(SessionState(role: role, loading: false, onboardingSeen: true));
   }
 
-  /// Signs in and checks the role chosen on the sign-in screen ([as])
-  /// against the trusted profile. On a mismatch the session is closed again
-  /// and a [RoleAccessException] is thrown — no dashboard is ever exposed.
   Future<void> signIn(String email, String password, {AppRole? as}) async {
     final auth = _requireAuth();
     _authenticating = true;
@@ -118,8 +106,6 @@ class SessionCubit extends Cubit<SessionState> {
   Future<List<MunicipalityOption>> listMunicipalities() =>
       _requireAuth().listMunicipalities();
 
-  /// Contractor self-registration. The account stays signed out of any
-  /// dashboard: the application must be approved by the municipality first.
   Future<ContractorSignUpOutcome> signUpContractor(String name, String email,
       String password, ContractorApplication application) async {
     final auth = _requireAuth();
@@ -136,7 +122,6 @@ class SessionCubit extends Cubit<SessionState> {
     return outcome;
   }
 
-  /// Returns true when signed in; false when the email must be confirmed.
   Future<bool> signUp(String name, String email, String password) async {
     final result = await _requireAuth().signUp(name, email, password);
     await _repository.markOnboardingSeen();
@@ -153,8 +138,6 @@ class SessionCubit extends Cubit<SessionState> {
     emit(_copy(recoveringPassword: false));
   }
 
-  /// Local mode: clears the saved demo role (in-memory data is kept).
-  /// Live mode: signs out of Supabase Auth.
   Future<void> logout() async {
     if (_auth != null) {
       await _auth.signOut();
@@ -177,7 +160,6 @@ class SessionCubit extends Cubit<SessionState> {
         _emitLive(profile,
             onboardingSeen: true, recoveringPassword: profile != null);
       case AuthEvent.signedIn:
-        // E.g. returning from an email confirmation link.
         if (state.profile == null && !state.loading && !_authenticating) {
           try {
             final profile = await _auth!.restore();

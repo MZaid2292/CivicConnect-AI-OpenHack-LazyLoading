@@ -14,8 +14,6 @@ import '../../complaints/domain/complaint_repository.dart';
 import '../../complaints/presentation/cubit/complaint_list_cubit.dart';
 import '../../complaints/presentation/widgets/badges.dart';
 
-/// Public accountability view: city-wide stats and a feed of every status
-/// change, newest first.
 class TransparencyScreen extends StatelessWidget {
   const TransparencyScreen({super.key, this.standalone = false});
   final bool standalone;

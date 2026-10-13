@@ -15,8 +15,6 @@ import '../../../jobs/domain/work_job.dart';
 import '../../../jobs/presentation/cubit/job_detail_cubit.dart';
 import '../../../jobs/presentation/screens/job_detail_screen.dart';
 
-/// Admin quality check: compare before/after evidence, then accept (resolve)
-/// or send back for rework.
 class InspectionScreen extends StatelessWidget {
   const InspectionScreen({super.key, required this.jobId});
   final String jobId;

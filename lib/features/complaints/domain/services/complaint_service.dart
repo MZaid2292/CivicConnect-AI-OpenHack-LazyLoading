@@ -15,7 +15,6 @@ import 'category_classifier.dart';
 import 'duplicate_detector.dart';
 import 'priority_engine.dart';
 
-/// Form data for creating or editing a complaint.
 class ComplaintInput {
   const ComplaintInput({
     required this.title,
@@ -35,14 +34,11 @@ class ComplaintInput {
   final List<MediaAttachment> photos;
 }
 
-/// Thrown when a report was created but some photos could not be uploaded,
-/// so the UI never claims a complete upload.
 class PartialSubmitException extends WorkflowException {
   const PartialSubmitException(this.complaint, super.message);
   final Complaint complaint;
 }
 
-/// Field-level validation shared by the form view model and the service.
 class ComplaintValidator {
   const ComplaintValidator._();
   static String? title(String v) => v.trim().length < 8
@@ -56,8 +52,6 @@ class ComplaintValidator {
       : null;
 }
 
-/// Complaint use cases: submission, NLP helpers, support, verification,
-/// duplicates, feedback and priority recalculation.
 class ComplaintService {
   ComplaintService({
     required ComplaintRepository complaints,
@@ -86,8 +80,6 @@ class ComplaintService {
 
   DateTime get now => _clock();
   PriorityRules get rules => _rules.current;
-
-  // ---- Algorithms exposed to view models -------------------------------
 
   ClassificationResult classify(String title, String description) =>
       classifier.classify(title, description);
@@ -121,8 +113,6 @@ class ComplaintService {
         now: now,
         rules: rules,
       );
-
-  // ---- Citizen use cases -------------------------------------------------
 
   Future<Complaint> saveDraft(Actor actor, ComplaintInput input,
       {String? draftId}) async {
@@ -232,8 +222,6 @@ class ComplaintService {
     }
   }
 
-  // ---- Admin use cases ---------------------------------------------------
-
   Future<void> verify(Actor actor, String complaintId,
       {required String department, String? note}) async {
     final c = await _require(complaintId);
@@ -256,7 +244,6 @@ class ComplaintService {
         note: reason.trim());
   }
 
-  /// Merges [duplicateId] into [originalId]; supporters carry over.
   Future<void> markDuplicate(
       Actor actor, String duplicateId, String originalId) async {
     if (duplicateId == originalId) {
@@ -286,8 +273,6 @@ class ComplaintService {
     await _complaints.save(c.copyWith(duplicateReviewCleared: true));
   }
 
-  /// Moves a complaint along the work lifecycle (used by the job service).
-  /// Enforces the state machine and the actor's role.
   Future<void> advanceForWork(
       Actor actor, String complaintId, ComplaintStatus to,
       {String? note, String? contractorId, String? jobId}) async {
@@ -298,7 +283,6 @@ class ComplaintService {
         note: note);
   }
 
-  /// Links a newly opened tender to the complaint without a status change.
   Future<void> linkJob(Actor actor, String complaintId, String jobId) async {
     requireRole(actor, {AppRole.municipalAdmin}, 'open tenders');
     final c = await _require(complaintId);
@@ -319,7 +303,6 @@ class ComplaintService {
         c.copyWith(priority: priorityEngine.assessComplaint(c, rules, now))));
   }
 
-  /// Potential duplicates among open, unreviewed reports (admin queue).
   Future<Map<Complaint, List<DuplicateCandidate>>>
       duplicateReviewQueue() async {
     final all = await _complaints.listComplaints();
@@ -338,15 +321,12 @@ class ComplaintService {
             existing: all,
             excludeId: c.id,
           )
-          // Only flag the newer report of a pair.
           .where((m) => m.complaint.createdAt.isBefore(c.createdAt))
           .toList();
       if (matches.isNotEmpty) result[c] = matches;
     }
     return result;
   }
-
-  // ---- Helpers -------------------------------------------------------------
 
   Complaint _build(Actor actor, ComplaintInput input,
       {required String id,

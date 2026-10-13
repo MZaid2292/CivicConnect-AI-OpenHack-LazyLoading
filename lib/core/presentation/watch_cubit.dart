@@ -20,8 +20,6 @@ class DataState<T> extends Equatable {
   List<Object?> get props => [status, data, error];
 }
 
-/// Generic view model that mirrors a repository stream into UI state
-/// (loading → ready / failure) with retry.
 class WatchCubit<T> extends Cubit<DataState<T>> {
   WatchCubit(this._source) : super(const DataState.loading()) {
     _listen();

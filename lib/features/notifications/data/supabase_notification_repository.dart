@@ -4,8 +4,6 @@ import '../../../core/supabase/db_gateway.dart';
 import '../../../core/supabase/live_collection.dart';
 import '../domain/app_notification.dart';
 
-/// The signed-in user's inbox. RLS limits rows to the caller; notifications
-/// are created by the database workflow functions, never by the client.
 class SupabaseNotificationRepository implements NotificationRepository {
   SupabaseNotificationRepository(this._db) {
     _live = LiveCollection(_load);
@@ -35,7 +33,6 @@ class SupabaseNotificationRepository implements NotificationRepository {
   @override
   Stream<List<AppNotification>> watchFor(String recipientId) => _live.watch();
 
-  /// Server-generated only; the client has no insert permission.
   @override
   Future<void> add(AppNotification notification) async {}
 
@@ -44,7 +41,6 @@ class SupabaseNotificationRepository implements NotificationRepository {
     final me = _db.currentUserId;
     if (me == null) return;
     try {
-      // Preferred: narrow function from the pending migration.
       await _db.rpc('mark_notifications_read');
     } on WorkflowException catch (e) {
       if (!e.message.contains('database update')) rethrow;

@@ -3,9 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/models/app_role.dart';
 import '../domain/session_repository.dart';
 
-/// DEMO ONLY. Stores a role preference and an onboarding flag — never
-/// credentials, tokens or identity. Once Supabase is added, Supabase Auth must
-/// be the session authority and roles must come from protected server data.
 class LocalSessionRepository implements SessionRepository {
   LocalSessionRepository(this._preferences);
   final SharedPreferences _preferences;

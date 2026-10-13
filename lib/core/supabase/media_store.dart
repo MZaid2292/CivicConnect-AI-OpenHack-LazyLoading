@@ -5,23 +5,17 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/workflow_exception.dart';
 import 'db_errors.dart';
 
-/// Private object storage for photos. Buckets are private; images are shown
-/// through short-lived signed URLs and only paths are stored in the database.
 abstract class MediaStore {
   Future<void> upload(String bucket, String path, Uint8List bytes,
       {required String contentType});
 
-  /// path → signed URL (missing entries could not be signed).
   Future<Map<String, String>> signedUrls(String bucket, List<String> paths);
 }
 
-/// Bucket limits from the database configuration.
 class PhotoRules {
   const PhotoRules._();
   static const maxBytes = 5 * 1024 * 1024;
 
-  /// Detects JPEG / PNG / WebP from magic bytes (the buckets accept only
-  /// these). Returns (mime, extension) or throws [WorkflowException].
   static (String, String) detect(Uint8List bytes) {
     if (bytes.lengthInBytes > maxBytes) {
       throw const WorkflowException(
@@ -60,7 +54,6 @@ class SupabaseMediaStore implements MediaStore {
   SupabaseMediaStore(this._client, {this.urlLifetime = 3600});
   final SupabaseClient _client;
 
-  /// Signed URL lifetime in seconds.
   final int urlLifetime;
 
   @override
@@ -82,7 +75,6 @@ class SupabaseMediaStore implements MediaStore {
           r.path: r.signedUrl,
       };
     } catch (_) {
-      // Images degrade to the placeholder; the record itself still loads.
       return const {};
     }
   }

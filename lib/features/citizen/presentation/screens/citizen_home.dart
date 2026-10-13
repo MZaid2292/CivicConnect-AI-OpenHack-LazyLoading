@@ -153,7 +153,6 @@ class _CitizenHeader extends StatelessWidget {
       const CivicSectionHeader('Browse by category',
           subtitle: 'Tap to filter the feed'),
       SizedBox(
-        // Grows with the user's text size so labels never clip.
         height: 64 + MediaQuery.textScalerOf(context).scale(56),
         child: ListView.separated(
           scrollDirection: Axis.horizontal,

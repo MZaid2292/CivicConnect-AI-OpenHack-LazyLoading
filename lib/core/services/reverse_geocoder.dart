@@ -5,18 +5,10 @@ import 'package:http/http.dart' as http;
 
 import '../utils/geo.dart';
 
-/// Turns coordinates into a readable street / area. Never throws: null means
-/// "no useful address" and the form falls back to the coordinates.
 abstract class ReverseGeocoder {
   Future<String?> addressFor(GeoPoint point);
 }
 
-/// Free OpenStreetMap Nominatim lookup (no API key, no paid service).
-///
-/// Follows the Nominatim usage policy: one request per explicit user action
-/// ("Use my location"), at most one request per second, an identifying
-/// User-Agent (browsers send their own Referer instead), results cached per
-/// ~11 m cell, and attribution via the OSM map already shown on the form.
 class NominatimReverseGeocoder implements ReverseGeocoder {
   NominatimReverseGeocoder({
     http.Client? client,
@@ -58,11 +50,10 @@ class NominatimReverseGeocoder implements ReverseGeocoder {
           jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>);
       return _cache[key] = address;
     } catch (_) {
-      return null; // offline, timeout, rate limit or bad response
+      return null;
     }
   }
 
-  /// Short "road, area, city" line from a Nominatim result.
   @visibleForTesting
   static String? formatAddress(Map<String, dynamic> json) {
     final a = json['address'];

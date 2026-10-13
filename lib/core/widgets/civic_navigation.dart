@@ -12,7 +12,6 @@ class CivicNavItem {
   final IconData selectedIcon;
 }
 
-/// Phone navigation (Material 3 NavigationBar).
 class CivicBottomNavigation extends StatelessWidget {
   const CivicBottomNavigation(
       {super.key,
@@ -49,7 +48,6 @@ class CivicBottomNavigation extends StatelessWidget {
   }
 }
 
-/// Tablet navigation rail; becomes a full sidebar when [extended].
 class CivicNavigationRail extends StatelessWidget {
   const CivicNavigationRail({
     super.key,
@@ -73,9 +71,6 @@ class CivicNavigationRail extends StatelessWidget {
       return DecoratedBox(
         decoration: BoxDecoration(
             border: Border(right: BorderSide(color: context.civic.border))),
-        // NavigationRail does not scroll: on short windows (landscape
-        // phones) drop the header and unselected labels, and let the rail
-        // scroll if it still doesn't fit.
         child: LayoutBuilder(builder: (context, box) {
           final short = box.maxHeight < 520;
           return SingleChildScrollView(
@@ -93,8 +88,6 @@ class CivicNavigationRail extends StatelessWidget {
                   destinations: [
                     for (final i in items)
                       NavigationRailDestination(
-                          // Unselected labels can be hidden here, so keep
-                          // the name available as a tooltip.
                           icon: short
                               ? Tooltip(message: i.label, child: Icon(i.icon))
                               : Icon(i.icon),
@@ -108,7 +101,6 @@ class CivicNavigationRail extends StatelessWidget {
         }),
       );
     }
-    // Desktop sidebar.
     return Container(
       width: 264,
       decoration: BoxDecoration(
@@ -197,8 +189,6 @@ class _SidebarItem extends StatelessWidget {
   }
 }
 
-/// Adaptive scaffold: bottom navigation on phones, rail on tablets,
-/// sidebar on desktop. Tab state is preserved; switching tabs fades.
 class CivicResponsiveScaffold extends StatefulWidget {
   const CivicResponsiveScaffold({
     super.key,

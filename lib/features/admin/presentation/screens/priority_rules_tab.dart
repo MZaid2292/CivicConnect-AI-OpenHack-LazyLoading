@@ -9,8 +9,6 @@ import '../../../complaints/domain/services/priority_engine.dart';
 import '../../../complaints/presentation/widgets/badges.dart';
 import '../cubit/priority_rules_cubit.dart';
 
-/// Municipal editor for the configurable priority rules, with a live preview
-/// of how open reports would be re-ranked before saving.
 class PriorityRulesTab extends StatelessWidget {
   const PriorityRulesTab({super.key});
 
@@ -338,8 +336,6 @@ class _RuleSection extends StatelessWidget {
       );
 }
 
-/// Label + value on one line, a full-width slider below — stays readable at
-/// large text sizes and narrow widths. A dot marks unsaved changes.
 class _RuleSlider extends StatelessWidget {
   const _RuleSlider({
     required this.label,
@@ -401,7 +397,6 @@ class _RuleSlider extends StatelessWidget {
   }
 }
 
-/// Coloured bands showing the score ranges each level covers.
 class _ThresholdScale extends StatelessWidget {
   const _ThresholdScale({required this.rules});
   final PriorityRules rules;
@@ -619,7 +614,6 @@ class _PreviewRow extends StatelessWidget {
   }
 }
 
-/// Pinned bar so Save / Discard stay reachable while editing long sections.
 class _SaveBar extends StatelessWidget {
   const _SaveBar({
     required this.dirty,

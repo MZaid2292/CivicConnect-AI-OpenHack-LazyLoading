@@ -2,8 +2,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/workflow_exception.dart';
 
-/// Runs a backend call and converts failures into [WorkflowException]s with
-/// messages the existing UI can show as-is.
 Future<T> guardDb<T>(Future<T> Function() call) async {
   try {
     return await call();
@@ -46,7 +44,6 @@ WorkflowException translateDbError(Object e) {
 
 WorkflowException _postgrest(String? code, String message) {
   switch (code) {
-    // RAISE EXCEPTION inside the workflow functions: already human-readable.
     case 'P0001':
       return WorkflowException(message);
     case '42501':

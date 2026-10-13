@@ -7,7 +7,6 @@ final _currency = NumberFormat.decimalPattern();
 String formatDateTime(DateTime value) => _dateTime.format(value);
 String formatDate(DateTime value) => _date.format(value);
 
-/// Simulated currency only — no real money moves in this app.
 String formatAmount(num value) => 'Rs ${_currency.format(value)}';
 
 String timeAgo(DateTime value, {DateTime? now}) {

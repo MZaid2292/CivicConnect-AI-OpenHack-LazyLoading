@@ -7,7 +7,6 @@ abstract class JobRepository {
   Future<WorkJob?> findById(String id);
   Future<String> nextId();
 
-  /// Inserts or updates. Implementations must reject illegal status changes.
   Future<void> save(WorkJob job);
 }
 

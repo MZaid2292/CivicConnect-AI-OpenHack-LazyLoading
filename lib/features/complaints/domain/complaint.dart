@@ -25,7 +25,6 @@ extension ComplaintCategoryInfo on ComplaintCategory {
         ComplaintCategory.other => 'Other',
       };
 
-  /// Default municipal department responsible for this category.
   String get department => switch (this) {
         ComplaintCategory.roadDamage => 'Roads & Infrastructure',
         ComplaintCategory.streetlight => 'Electrical Services',
@@ -35,13 +34,10 @@ extension ComplaintCategoryInfo on ComplaintCategory {
       };
 }
 
-/// Complaint lifecycle. Contract/payment state lives on `WorkJob` instead.
 enum ComplaintStatus {
   draft,
   submitted,
 
-  /// Municipality is reviewing before verifying (database stage
-  /// `under_review`). Shares the "Submitted" step in the progress tracker.
   underReview,
   verified,
   assigned,
@@ -84,7 +80,6 @@ enum LocationSource {
   defaultArea,
   none,
 
-  /// Coordinates stored by the backend; how they were captured isn't stored.
   recorded,
 }
 
@@ -190,7 +185,6 @@ class Complaint extends Equatable {
   final List<ComplaintComment> comments;
   final List<TimelineEvent> timeline;
 
-  /// The rule-based suggestion shown at submission time (kept for audit).
   final ClassificationResult? classification;
   final String? department;
   final String? contractorId;
@@ -199,7 +193,6 @@ class Complaint extends Equatable {
   final String? duplicateOfId;
   final String? rejectionReason;
 
-  /// Admin reviewed potential duplicates and decided this report is distinct.
   final bool duplicateReviewCleared;
 
   int get supportCount => supporterIds.length;

@@ -8,7 +8,6 @@ import '../domain/complaint_workflow.dart';
 import '../domain/priority_rules_repository.dart';
 import '../domain/services/priority_engine.dart';
 
-/// In-memory complaint store. Data resets on app restart.
 class MockComplaintRepository implements ComplaintRepository {
   MockComplaintRepository([Iterable<Complaint> seed = const []])
       : _store = InMemoryCollection(seed, (c) => c.id),
@@ -49,7 +48,6 @@ class MockComplaintRepository implements ComplaintRepository {
     _store.notify();
   }
 
-  /// Even the local store refuses illegal state changes.
   void _guard(Complaint next) {
     final existing = _store.find(next.id);
     if (existing == null) {

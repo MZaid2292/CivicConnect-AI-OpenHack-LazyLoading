@@ -3,20 +3,14 @@ import 'package:flutter/services.dart';
 
 import 'tokens.dart';
 
-/// Brand and semantic hues. Widgets should NOT use these directly for
-/// surfaces or text — read `Theme.of(context).colorScheme` / `context.civic`
-/// instead so light and dark mode both work. Semantic hues used for status
-/// indicators go through [CivicPalette.tone] to stay readable in dark mode.
 class AppColors {
   const AppColors._();
-  // Brand
   static const civicBlue = Color(0xFF1D4ED8);
   static const navy = Color(0xFF0B1F4B);
   static const royal = civicBlue;
   static const teal = Color(0xFF0D9488);
   static const emerald = Color(0xFF059669);
   static const cyan = Color(0xFF0891B2);
-  // Semantic hues
   static const amber = Color(0xFFB45309);
   static const orange = Color(0xFFC2410C);
   static const red = Color(0xFFB91C1C);
@@ -26,7 +20,6 @@ class AppColors {
   static const slate = Color(0xFF64748B);
 }
 
-/// Extra design tokens not covered by [ColorScheme].
 @immutable
 class CivicPalette extends ThemeExtension<CivicPalette> {
   const CivicPalette({
@@ -46,23 +39,18 @@ class CivicPalette extends ThemeExtension<CivicPalette> {
 
   final bool isDark;
 
-  /// Secondary text.
   final Color muted;
 
-  /// Tertiary text / disabled icons.
   final Color subtle;
 
-  /// Hairline borders around cards and inputs.
   final Color border;
 
-  /// Slightly raised surface (chips, input fills, nested panels).
   final Color raised;
   final Color success;
   final Color warning;
   final Color danger;
   final Color info;
 
-  /// Brand gradient for hero headers.
   final Color heroStart;
   final Color heroEnd;
   final Color shadow;
@@ -97,11 +85,8 @@ class CivicPalette extends ThemeExtension<CivicPalette> {
     shadow: Color(0x00000000),
   );
 
-  /// Adapts a semantic hue for the current brightness: unchanged in light
-  /// mode, lightened in dark mode so text/icons keep contrast.
   Color tone(Color c) => isDark ? Color.lerp(c, Colors.white, 0.45)! : c;
 
-  /// Soft tinted background for badges/banners of hue [c].
   Color tint(Color c) => c.withValues(alpha: isDark ? 0.18 : 0.10);
 
   List<BoxShadow> get cardShadow => isDark
@@ -146,7 +131,6 @@ class AppTheme {
   static ThemeData get lightTheme => _build(Brightness.light);
   static ThemeData get darkTheme => _build(Brightness.dark);
 
-  /// Back-compat alias.
   static ThemeData get light => lightTheme;
 
   static ColorScheme _scheme(Brightness b) {

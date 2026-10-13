@@ -2,7 +2,6 @@ import '../../../core/models/app_role.dart';
 import '../../../core/models/workflow_exception.dart';
 import 'work_job.dart';
 
-/// Contract state machine (separate from the complaint state machine).
 class JobWorkflow {
   const JobWorkflow._();
 

@@ -2,16 +2,11 @@ import 'dart:typed_data';
 
 import 'package:equatable/equatable.dart';
 
-/// Where an attachment's bytes live. Lets the UI be honest about durability.
 enum MediaStorage {
-  /// Bundled illustration standing in for a photo in seeded demo data.
   seedIllustration,
 
-  /// Picked on this device and held in memory only — lost on restart and
-  /// never uploaded anywhere.
   localMemory,
 
-  /// Future: durable object storage (e.g. Supabase Storage). Not used yet.
   remoteUpload,
 }
 

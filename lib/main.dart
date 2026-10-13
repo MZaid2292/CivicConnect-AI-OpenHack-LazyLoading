@@ -14,11 +14,8 @@ import 'features/auth/presentation/cubit/session_cubit.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // On web, keep the address bar in sync with pushed screens (e.g. a
-  // complaint detail) so reloading or sharing the URL reopens that screen.
   GoRouter.optionURLReflectsImperativeAPIs = true;
 
-  // Supabase settings come from --dart-define-from-file=supabase.local.json.
   SupabaseConfig? supabase;
   try {
     supabase = SupabaseConfig.fromEnvironment();
@@ -27,7 +24,6 @@ Future<void> main() async {
     return;
   }
   if (supabase == null && kReleaseMode) {
-    // Production builds never fall back to the local sample workflow.
     runApp(const _ConfigurationError(
         'This build has no backend configuration. Build it with '
         '--dart-define-from-file=supabase.local.json.'));
@@ -41,7 +37,6 @@ Future<void> main() async {
         url: supabase.url, publishableKey: supabase.anonKey);
     dependencies = AppDependencies.live(preferences, Supabase.instance.client);
   } else {
-    // Debug builds without configuration: local sample workflow.
     dependencies = AppDependencies(preferences);
   }
   final sessionCubit = SessionCubit(dependencies.sessionRepository,

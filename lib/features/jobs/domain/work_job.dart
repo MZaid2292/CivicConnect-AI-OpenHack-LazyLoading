@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 import '../../../core/models/media_attachment.dart';
 import '../../complaints/domain/complaint.dart';
 
-/// Contract (work order) lifecycle — independent from complaint status.
 enum JobStatus {
   openForBids,
   awarded,
@@ -33,7 +32,6 @@ extension JobStatusInfo on JobStatus {
       }.contains(this);
 }
 
-/// SIMULATED payment state. No money moves; there is no payment gateway.
 enum PaymentStatus { notStarted, heldSimulated, releasedSimulated }
 
 extension PaymentStatusInfo on PaymentStatus {

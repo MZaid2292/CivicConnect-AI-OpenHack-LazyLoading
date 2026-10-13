@@ -8,8 +8,6 @@ import '../../domain/complaint.dart';
 import '../../domain/complaint_workflow.dart';
 import 'badges.dart';
 
-/// Progress along the happy path. Full stepper on wide layouts, compact
-/// progress bar + current step on narrow ones or with large text.
 class StatusTracker extends StatelessWidget {
   const StatusTracker({super.key, required this.status});
   final ComplaintStatus status;
@@ -131,8 +129,6 @@ class StatusTracker extends StatelessWidget {
   }
 }
 
-/// Vertical, audit-style list of every status change, newest first. The
-/// latest event is highlighted as the current state.
 class CivicTimeline extends StatelessWidget {
   const CivicTimeline({super.key, required this.events});
   final List<TimelineEvent> events;

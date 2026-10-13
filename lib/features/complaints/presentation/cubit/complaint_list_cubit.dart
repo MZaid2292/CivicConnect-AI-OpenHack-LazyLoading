@@ -34,7 +34,6 @@ class ComplaintListState extends Equatable {
   final String query;
   final ComplaintCategory? category;
 
-  /// Empty = any status.
   final Set<ComplaintStatus> statuses;
   final ComplaintSort sort;
   final String? error;
@@ -87,8 +86,6 @@ class ComplaintListState extends Equatable {
       [status, all, query, category, statuses, sort, error];
 }
 
-/// View model for any filtered complaint list. [scope] restricts which
-/// complaints this list may ever show (e.g. public only, or "mine").
 class ComplaintListCubit extends Cubit<ComplaintListState> {
   ComplaintListCubit(
     this._repository, {

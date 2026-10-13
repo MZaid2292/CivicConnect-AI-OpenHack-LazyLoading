@@ -33,7 +33,6 @@ class _CivicConnectAppState extends State<CivicConnectApp> {
   @override
   Widget build(BuildContext context) {
     final d = widget.dependencies;
-    // One instance of each repository/service shared by every role and screen.
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider.value(value: d),
@@ -53,8 +52,6 @@ class _CivicConnectAppState extends State<CivicConnectApp> {
       child: MaterialApp.router(
         title: 'CivicConnect AI',
         debugShowCheckedModeBanner: false,
-        // Follows the OS appearance, including live changes while running.
-        // Deliberately not stored in SharedPreferences.
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,

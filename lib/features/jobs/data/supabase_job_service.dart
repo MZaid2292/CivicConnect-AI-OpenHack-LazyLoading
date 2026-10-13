@@ -12,12 +12,6 @@ import '../domain/job_service.dart';
 import '../domain/work_job.dart';
 import 'supabase_job_repositories.dart';
 
-/// Repair-contract use cases against Supabase. Every action is a database
-/// function that re-checks role, ownership, municipality and state:
-/// assign_repair_job, inspect_repair, verify_contractor, start_repair,
-/// add_repair_evidence, submit_repair. Tendering and bidding use
-/// open_tender / submit_bid / award_bid from the pending migration and fail
-/// with a clear message until it is applied — no bid is ever faked.
 class SupabaseJobService extends JobService {
   SupabaseJobService({
     required SupabaseJobRepository super.jobs,
@@ -40,8 +34,6 @@ class SupabaseJobService extends JobService {
   final MediaStore _media;
   static const _uuid = Uuid();
 
-  /// Accepting an inspection resolves the report; simulated payment is a
-  /// separate finance step on the server.
   @override
   bool get inspectionReleasesPayment => false;
 
@@ -55,8 +47,6 @@ class SupabaseJobService extends JobService {
       _contractorRepo.refresh(),
     ]);
   }
-
-  // ---- Admin -------------------------------------------------------------------
 
   @override
   Future<WorkJob> openTender(Actor actor, String complaintId,
@@ -148,8 +138,6 @@ class SupabaseJobService extends JobService {
     await _refreshAll();
   }
 
-  // ---- Contractor ------------------------------------------------------------------
-
   @override
   Future<void> submitBid(Actor actor, String jobId,
       {required int amount, required int days, required String note}) async {
@@ -175,8 +163,6 @@ class SupabaseJobService extends JobService {
     await _refreshAll();
   }
 
-  /// Progress entries are stored as photo evidence; a note alone has no
-  /// server record.
   @override
   Future<void> addProgress(Actor actor, String jobId, String note,
       {MediaAttachment? photo}) async {

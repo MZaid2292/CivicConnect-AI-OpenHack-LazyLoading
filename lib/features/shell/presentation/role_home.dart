@@ -10,7 +10,6 @@ import '../../citizen/presentation/screens/citizen_home.dart';
 import '../../contractor/presentation/screens/contractor_home.dart';
 import '../../notifications/domain/app_notification.dart';
 
-/// Picks the dashboard for the active demo role.
 class RoleHome extends StatelessWidget {
   const RoleHome({super.key});
 
@@ -34,8 +33,6 @@ class RoleHome extends StatelessWidget {
   }
 }
 
-/// Opened from a password-reset email (live accounts): asks for the new
-/// password, whether the link was handled before or after this screen built.
 class _PasswordRecoveryPrompt extends StatefulWidget {
   const _PasswordRecoveryPrompt({required this.child});
   final Widget child;

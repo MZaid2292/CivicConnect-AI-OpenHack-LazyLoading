@@ -17,8 +17,6 @@ import '../../../complaints/presentation/widgets/badges.dart';
 import '../../../complaints/presentation/widgets/smart_insights.dart';
 import '../cubit/duplicate_review_cubit.dart';
 
-/// Side-by-side review of reports the duplicate detector flagged. Nothing is
-/// merged automatically — the admin decides per pair.
 class DuplicateReviewTab extends StatelessWidget {
   const DuplicateReviewTab({super.key});
 
@@ -146,23 +144,18 @@ class DuplicateReviewTab extends StatelessWidget {
       ]);
 }
 
-/// (label, colour) for a 0..1 duplicate score.
 (String, Color) _strength(double score) => score >= 0.8
     ? ('Strong match', AppColors.red)
     : score >= 0.65
         ? ('Likely match', AppColors.orange)
         : ('Possible match', AppColors.amber);
 
-/// Explains the detector's weights so admins can judge the score.
 class _ScoringMethodCard extends StatelessWidget {
   const _ScoringMethodCard();
 
   @override
   Widget build(BuildContext context) {
     if (context.isLiveBackend) {
-      // Live scores come from the database duplicate check, whose weights
-      // are not the app's local formula — don't state numbers we can't vouch
-      // for.
       return const SmartInsightCard(
         icon: Icons.rule_outlined,
         title: 'How matches are scored',
@@ -303,8 +296,6 @@ class _ReviewCard extends StatelessWidget {
   }
 }
 
-/// New report vs. possible original, the match score and the signals
-/// behind it.
 class _MatchComparison extends StatelessWidget {
   const _MatchComparison(
       {required this.complaint, required this.match, required this.onMerge});
@@ -514,7 +505,6 @@ class _ScoreDial extends StatelessWidget {
   }
 }
 
-/// One signal behind a match: label, value and (optionally) a 0..1 bar.
 class _SignalBar extends StatelessWidget {
   const _SignalBar({
     required this.icon,

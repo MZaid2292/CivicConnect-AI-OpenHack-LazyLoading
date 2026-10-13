@@ -24,7 +24,6 @@ import '../../domain/job_service.dart';
 import '../../domain/work_job.dart';
 import '../cubit/job_detail_cubit.dart';
 
-/// Creates the job view model for a route.
 Widget provideJobCubit(BuildContext context, String jobId, Widget child) =>
     BlocProvider(
       create: (context) => JobDetailCubit(
@@ -330,7 +329,6 @@ class _ActionArea extends StatelessWidget {
       ]);
     }
 
-    // Contractor
     final mine = job.contractorId == actor.id;
     if (job.status == JobStatus.openForBids) {
       final myBid =
@@ -520,7 +518,6 @@ class _ActionArea extends StatelessWidget {
   }
 }
 
-/// Guidance card for the contractor's next action.
 class _NextStep extends StatelessWidget {
   const _NextStep({
     required this.title,

@@ -54,8 +54,6 @@ class PriorityRulesState extends Equatable {
       [saved, draft, openComplaints, saving, message, error, eventId];
 }
 
-/// Edits a draft copy of the rules with a live preview of how open reports
-/// would be re-ranked, then saves through the domain service.
 class PriorityRulesCubit extends Cubit<PriorityRulesState> {
   PriorityRulesCubit({
     required ComplaintService service,
@@ -78,7 +76,6 @@ class PriorityRulesCubit extends Cubit<PriorityRulesState> {
     return super.close();
   }
 
-  /// (complaint, current level, level under draft rules)
   List<(Complaint, PriorityAssessment, PriorityAssessment)> preview() => [
         for (final c in state.openComplaints)
           (

@@ -3,13 +3,6 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Keeps live repositories fresh while signed in:
-/// * Supabase Realtime (postgres changes, filtered by RLS) for the tables
-///   added to the `supabase_realtime` publication by the pending migration;
-/// * a periodic refresh as a fallback (and until the migration is applied);
-/// * a refresh whenever the app returns to the foreground.
-/// On sign-out every cache is cleared so the next account never sees the
-/// previous user's data.
 class LiveSync {
   LiveSync(
     this._client, {

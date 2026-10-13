@@ -17,14 +17,9 @@ class MediaPickException implements Exception {
 }
 
 abstract class MediaPickerService {
-  /// Returns `null` when the user cancels. Throws [MediaPickException] on
-  /// permission or platform errors.
   Future<PickedMedia?> pickImage(MediaSource source);
 }
 
-/// image_picker implementation. Bytes are read into memory so the same code
-/// path works on Android and web (no dart:io File dependency). Images are
-/// downscaled to keep memory use reasonable.
 class ImagePickerMediaService implements MediaPickerService {
   ImagePickerMediaService([ImagePicker? picker])
       : _picker = picker ?? ImagePicker();
@@ -34,8 +29,6 @@ class ImagePickerMediaService implements MediaPickerService {
 
   @override
   Future<PickedMedia?> pickImage(MediaSource source) async {
-    // Desktop browsers have no camera capture for file inputs and would open
-    // a file dialog instead — say so rather than silently using files.
     if (source == MediaSource.camera &&
         kIsWeb &&
         defaultTargetPlatform != TargetPlatform.android &&

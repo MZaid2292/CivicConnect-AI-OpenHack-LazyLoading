@@ -336,7 +336,6 @@ class _HeroAction extends StatelessWidget {
       );
 }
 
-/// Pending vs resolved overview as one segmented bar with a legend.
 class _StatusDistribution extends StatelessWidget {
   const _StatusDistribution({required this.complaints});
   final List<Complaint> complaints;
@@ -466,8 +465,6 @@ class _Panel extends StatelessWidget {
         child: CivicCard(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            // Wraps the action under the title when both don't fit
-            // (narrow screens, large text).
             Wrap(
               alignment: WrapAlignment.spaceBetween,
               crossAxisAlignment: WrapCrossAlignment.center,
@@ -496,7 +493,6 @@ class _Panel extends StatelessWidget {
       );
 }
 
-/// List row that wraps its trailing action under the text on narrow widths.
 class _PanelRow extends StatelessWidget {
   const _PanelRow({
     required this.leading,

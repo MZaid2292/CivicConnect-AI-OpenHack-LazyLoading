@@ -171,7 +171,6 @@ class _HeroContent extends StatelessWidget {
       );
 }
 
-/// Illustration composed from widgets: a report flowing to "resolved".
 class _HeroIllustration extends StatelessWidget {
   const _HeroIllustration();
 
@@ -263,8 +262,6 @@ class _Features extends StatelessWidget {
               if (context.mounted) context.go(Routes.login);
             },
           ),
-          // The role selector exists only in the local preview build; real
-          // accounts get their role from the server.
           if (!context.isLiveBackend) ...[
             Space.gapSm,
             CivicButton(

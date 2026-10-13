@@ -6,8 +6,6 @@ import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
 import 'civic_widgets.dart';
 
-/// Renders any [MediaAttachment]: real in-memory bytes, or a styled sample
-/// illustration for seeded data. Shows where the image lives.
 class PhotoTile extends StatelessWidget {
   const PhotoTile({
     super.key,
@@ -69,7 +67,6 @@ class PhotoTile extends StatelessWidget {
       );
 }
 
-/// Just the image (fills its parent with BoxFit.cover).
 class MediaImage extends StatelessWidget {
   const MediaImage({super.key, required this.media});
   final MediaAttachment media;
@@ -82,7 +79,6 @@ class MediaImage extends StatelessWidget {
           gaplessPlayback: true,
           errorBuilder: (_, __, ___) => _Illustration(media: media));
     }
-    // Private storage photo via a short-lived signed URL.
     if (media.remoteUrl != null) {
       return Image.network(media.remoteUrl!,
           fit: BoxFit.cover,
@@ -170,12 +166,10 @@ class PhotoStrip extends StatelessWidget {
       );
 }
 
-/// Large swipeable evidence viewer with thumbnails and captions.
 class EvidenceGallery extends StatefulWidget {
   const EvidenceGallery({super.key, required this.photos, this.heroTag});
   final List<MediaAttachment> photos;
 
-  /// Hero tag for the first photo (matches the list thumbnail).
   final String? heroTag;
 
   @override
@@ -280,8 +274,6 @@ class _EvidenceGalleryState extends State<EvidenceGallery> {
   }
 }
 
-/// Photo upload component: empty call-to-action, thumbnails with remove,
-/// and an honest note about local-only storage.
 class CivicImagePickerCard extends StatelessWidget {
   const CivicImagePickerCard({
     super.key,
@@ -382,8 +374,6 @@ class CivicImagePickerCard extends StatelessWidget {
   }
 }
 
-/// Bottom sheet asking camera vs gallery (`true` = camera). Returns null
-/// when dismissed. With [allowGallery] false only the camera is offered.
 Future<bool?> askCameraOrGallery(BuildContext context,
         {bool allowGallery = true}) =>
     showModalBottomSheet<bool>(

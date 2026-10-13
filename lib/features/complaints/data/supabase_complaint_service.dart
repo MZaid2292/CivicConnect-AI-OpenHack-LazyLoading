@@ -16,12 +16,6 @@ import '../domain/services/duplicate_detector.dart';
 import '../domain/services/priority_engine.dart';
 import 'supabase_complaint_repository.dart';
 
-/// Complaint use cases against Supabase. State changes go through the
-/// SECURITY DEFINER workflow functions (review_complaint, review_duplicate,
-/// save_priority_rule); citizen-owned rows (complaint, photos, comments,
-/// support, reviews) are inserted directly under RLS. The client-side checks
-/// inherited from [ComplaintService] only keep the UI responsive — the
-/// database is the authority.
 class SupabaseComplaintService extends ComplaintService {
   SupabaseComplaintService({
     required SupabaseComplaintRepository complaints,
@@ -54,8 +48,6 @@ class SupabaseComplaintService extends ComplaintService {
     return id;
   }
 
-  // ---- Citizen ---------------------------------------------------------------
-
   @override
   Future<Complaint> submit(Actor actor, ComplaintInput input,
       {String? draftId}) async {
@@ -71,7 +63,6 @@ class SupabaseComplaintService extends ComplaintService {
           'the ward centre.');
     }
     final municipality = await _municipalityForSubmission();
-    // Validate photos before creating anything.
     final photos = [
       for (final p in input.photos)
         if (p.bytes != null) (p, PhotoRules.detect(p.bytes!)),
@@ -91,7 +82,6 @@ class SupabaseComplaintService extends ComplaintService {
     final reference = row['reference_code'] as String;
     if (draftId != null) _repo.removeDraft(draftId);
 
-    // Storage paths depend on the complaint uuid, so photos go second.
     var failed = 0;
     for (final (photo, (mime, ext)) in photos) {
       final path = 'complaints/$complaintUuid/${_uuid.v4()}.$ext';
@@ -126,7 +116,6 @@ class SupabaseComplaintService extends ComplaintService {
   Future<String> _municipalityForSubmission() async {
     final own = _profile()?.municipalityId;
     if (own != null) return own;
-    // Single-municipality deployments: the only municipality is unambiguous.
     final all = await _db.select('municipalities', columns: 'id', limit: 2);
     if (all.length == 1) return all.first['id'] as String;
     throw const WorkflowException(
@@ -195,8 +184,6 @@ class SupabaseComplaintService extends ComplaintService {
     await _repo.refresh();
   }
 
-  // ---- Municipal admin ---------------------------------------------------------
-
   @override
   Future<void> verify(Actor actor, String complaintId,
       {required String department, String? note}) async {
@@ -223,7 +210,6 @@ class SupabaseComplaintService extends ComplaintService {
     await _repo.refresh();
   }
 
-  /// Only pairs flagged by the database duplicate check can be merged.
   @override
   Future<void> markDuplicate(
       Actor actor, String duplicateId, String originalId) async {
@@ -265,9 +251,6 @@ class SupabaseComplaintService extends ComplaintService {
     await _repo.refresh();
   }
 
-  /// Pending pairs from the database duplicate check. Score, distance and
-  /// reason are the server's; wording overlap and category match are derived
-  /// from the two reports' actual text for display.
   @override
   Future<Map<Complaint, List<DuplicateCandidate>>>
       duplicateReviewQueue() async {
@@ -300,13 +283,10 @@ class SupabaseComplaintService extends ComplaintService {
   @override
   Future<void> updatePriorityRules(Actor actor, PriorityRules newRules) async {
     requireRole(actor, {AppRole.municipalAdmin}, 'change priority rules');
-    // save_priority_rule persists the rule; existing reports keep their
-    // stored score until the server recalculates them.
     await _rulesRepo.save(newRules);
     await _repo.refresh();
   }
 
-  /// Scores are calculated by the database, not re-computed on the client.
   @override
   Future<void> recomputePriorities() async {}
 

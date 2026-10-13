@@ -28,11 +28,9 @@ class ShellTab {
   final Widget child;
   final Widget? fab;
 
-  /// App bar title when different from the navigation label.
   final String? title;
 }
 
-/// Lets nested pages switch shell tabs (e.g. KPI card → queue).
 class ShellScope extends InheritedWidget {
   const ShellScope({super.key, required this.goToTab, required super.child});
   final void Function(int index) goToTab;
@@ -46,7 +44,6 @@ class ShellScope extends InheritedWidget {
 
 typedef NotificationsCubit = WatchCubit<List<AppNotification>>;
 
-/// Role dashboard shell on top of [CivicResponsiveScaffold].
 class RoleShell extends StatefulWidget {
   const RoleShell({super.key, required this.role, required this.tabs});
   final AppRole role;
@@ -179,9 +176,6 @@ class _AccountMenu extends StatelessWidget {
     final live = context.isLiveBackend;
     final actor =
         context.read<SessionCubit>().state.actor ?? Actor.demoFor(role);
-    // MenuAnchor (not PopupMenuButton): its overlay belongs to the anchor, so
-    // logging out — which replaces this whole shell — cannot leave a popup
-    // route referencing a disposed widget.
     return MenuAnchor(
       alignmentOffset: const Offset(-180, 4),
       menuChildren: [

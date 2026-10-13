@@ -7,7 +7,6 @@ import '../../../../core/widgets/civic_widgets.dart';
 import '../../../complaints/presentation/widgets/badges.dart';
 import '../../domain/work_job.dart';
 
-/// Marketplace-style job card: category, title, money and bid activity.
 class JobCard extends StatelessWidget {
   const JobCard({super.key, required this.job, this.onTap, this.highlight});
   final WorkJob job;

@@ -16,10 +16,6 @@ extension AppRoleText on AppRole {
       };
 }
 
-/// A fixed demo identity per role.
-///
-/// DEMO ONLY: these identities are not authenticated. In the Supabase phase the
-/// actor must come from the verified Auth session and a server-side role table.
 class Actor {
   const Actor({required this.id, required this.name, required this.role});
   final String id;

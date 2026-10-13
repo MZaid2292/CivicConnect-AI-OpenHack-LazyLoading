@@ -64,7 +64,6 @@ class ContractorHome extends StatelessWidget {
       );
 }
 
-/// Shared loading/error handling for the contractor tabs.
 class _JobsScope extends StatelessWidget {
   const _JobsScope({required this.builder});
   final Widget Function(BuildContext, List<WorkJob>, Contractor?, String me)
@@ -262,7 +261,6 @@ class _ContractorDashboard extends StatelessWidget {
       );
 }
 
-/// Mock earnings ledger derived from job payment states.
 class _EarningsCard extends StatelessWidget {
   const _EarningsCard({required this.jobs});
   final List<WorkJob> jobs;
@@ -536,8 +534,6 @@ class _ContractorProfile extends StatelessWidget {
                     const CivicSectionHeader('Public performance',
                         icon: Icons.star_outline),
                     CivicCard(
-                      // Wrap: the rating moves above the details when large
-                      // text leaves no room side by side.
                       child: Wrap(
                           spacing: Space.lg,
                           runSpacing: Space.sm,

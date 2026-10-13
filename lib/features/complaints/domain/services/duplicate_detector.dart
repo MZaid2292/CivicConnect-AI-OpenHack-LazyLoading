@@ -15,7 +15,6 @@ class DuplicateCandidate extends Equatable {
   });
   final Complaint complaint;
 
-  /// Combined 0..1 score; see [DuplicateDetector] for the weights.
   final double score;
   final double textSimilarity;
   final bool sameCategory;
@@ -27,12 +26,6 @@ class DuplicateCandidate extends Equatable {
       [complaint.id, score, textSimilarity, sameCategory, distanceMeters];
 }
 
-/// Flags potential duplicates using approximate distance (Haversine),
-/// category match, and Jaccard token similarity of title + description.
-///
-/// With coordinates:   0.45·proximity + 0.25·category + 0.30·text
-/// Without coordinates (GPS unavailable): 0.35·category + 0.65·text, and
-/// a higher text threshold — results are labelled "text-only".
 class DuplicateDetector {
   const DuplicateDetector({
     this.radiusMeters = 300,

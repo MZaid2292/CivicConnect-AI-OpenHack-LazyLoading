@@ -29,7 +29,6 @@ class LocationResult {
 }
 
 abstract class LocationService {
-  /// Never throws: failures are returned so the UI can fall back to a pin.
   Future<LocationResult> currentLocation();
 }
 

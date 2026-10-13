@@ -13,12 +13,6 @@ import '../../domain/login_role_check.dart';
 import '../cubit/session_cubit.dart';
 import 'role_selection_screen.dart';
 
-/// Sign-in / sign-up. Live backend: real Supabase Auth with a Citizen /
-/// Municipal Admin / Contractor selector that only picks the flow — the
-/// dashboard is decided by the trusted database role, and a mismatch is
-/// refused. Contractors apply through sign-up (pending until a municipal admin
-/// approves); admins cannot sign up. Local preview build: validates input and
-/// leads to the demo role selector.
 class DemoLoginScreen extends StatefulWidget {
   const DemoLoginScreen({super.key});
 
@@ -37,13 +31,11 @@ class _DemoLoginScreenState extends State<DemoLoginScreen> {
   bool _obscure = true;
   bool _busy = false;
 
-  /// Live only: which sign-in flow to use (never a permission).
   AppRole _role = AppRole.citizen;
   List<MunicipalityOption>? _municipalities;
   String? _municipalityId;
   String? _municipalityError;
 
-  /// Pending-approval / confirmation notice shown with the existing banner.
   (String, String)? _notice;
 
   bool get _contractorSignUp =>
@@ -62,7 +54,6 @@ class _DemoLoginScreenState extends State<DemoLoginScreen> {
   void _selectRole(AppRole role) => setState(() {
         _role = role;
         _notice = null;
-        // Municipal accounts are provisioned by the municipality.
         if (role == AppRole.municipalAdmin) _signUp = false;
         if (_contractorSignUp) _loadMunicipalities();
       });
@@ -142,7 +133,6 @@ class _DemoLoginScreenState extends State<DemoLoginScreen> {
       } else {
         await session.signIn(_email.text, _password.text, as: _role);
       }
-      // On success the router moves to the dashboard.
     } on RoleAccessException catch (e) {
       if (!mounted) return;
       if (e.pendingApproval) {
@@ -177,7 +167,6 @@ class _DemoLoginScreenState extends State<DemoLoginScreen> {
     }
   }
 
-  /// Contractor application fields, styled like the existing inputs.
   List<Widget> _contractorFields(BuildContext context) => [
         Padding(
           padding: const EdgeInsets.only(bottom: Space.md),
@@ -394,9 +383,6 @@ class _DemoLoginScreenState extends State<DemoLoginScreen> {
       );
 }
 
-/// Compact Citizen / Municipal Admin / Contractor choice for the sign-in
-/// flow, in the same SegmentedButton style as the Sign in / Sign up toggle.
-/// Icons are dropped on narrow screens or with large text so labels fit.
 class _RoleSelector extends StatelessWidget {
   const _RoleSelector({required this.selected, required this.onSelected});
   final AppRole selected;

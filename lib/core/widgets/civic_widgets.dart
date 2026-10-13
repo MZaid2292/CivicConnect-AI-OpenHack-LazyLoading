@@ -4,12 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
 
-/// Allows one extra line when the user has enlarged text (> 1.3×), so short
-/// labels wrap instead of being cut off with an ellipsis.
 int adaptiveLines(BuildContext context, [int lines = 1]) =>
     MediaQuery.textScalerOf(context).scale(1) > 1.3 ? lines + 1 : lines;
 
-/// Centers content with a max width so tablet/desktop layouts stay readable.
 class ResponsiveCenter extends StatelessWidget {
   const ResponsiveCenter(
       {super.key, required this.child, this.maxWidth = 1180});
@@ -19,9 +16,6 @@ class ResponsiveCenter extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Align(
         alignment: Alignment.topCenter,
-        // Size to the child vertically; without this, Align expands to all
-        // available height (e.g. swallowing a Scaffold's body when used in
-        // bottomNavigationBar).
         heightFactor: 1,
         child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: maxWidth), child: child),
@@ -31,7 +25,6 @@ class ResponsiveCenter extends StatelessWidget {
 bool isWide(BuildContext context) =>
     MediaQuery.sizeOf(context).width >= Breakpoints.expanded;
 
-/// Horizontal page padding that grows with the window.
 EdgeInsets pagePadding(BuildContext context, {double top = Space.lg}) {
   final h = switch (windowSizeOf(context)) {
     WindowSize.compact => Space.lg,
@@ -41,15 +34,6 @@ EdgeInsets pagePadding(BuildContext context, {double top = Space.lg}) {
   return EdgeInsets.fromLTRB(h, top, h, Space.xxl);
 }
 
-// ---------------------------------------------------------------------------
-// App bar
-// ---------------------------------------------------------------------------
-
-/// Consistent app bar with an optional subtitle line.
-///
-/// [fallbackLocation] adds a back button that navigates there when the
-/// screen was opened directly (e.g. a browser reload of a detail URL) and
-/// there is nothing to pop.
 class CivicAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CivicAppBar(
       {super.key,
@@ -70,9 +54,6 @@ class CivicAppBar extends StatelessWidget implements PreferredSizeWidget {
     final civic = context.civic;
     return AppBar(
       toolbarHeight: preferredSize.height,
-      // A raised surface with a hairline edge and a slim brand accent, so the
-      // header reads as its own layer instead of blending into the page.
-      // Height is unchanged, so no body content moves.
       backgroundColor: context.colors.surface,
       scrolledUnderElevation: 2,
       shadowColor: civic.shadow,
@@ -125,8 +106,6 @@ class CivicAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-/// App bar action that shows icon + label, collapsing to an icon button
-/// (label as tooltip) on small phones or with enlarged text.
 class CivicAppBarAction extends StatelessWidget {
   const CivicAppBarAction(
       {super.key,
@@ -148,12 +127,6 @@ class CivicAppBarAction extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Surfaces
-// ---------------------------------------------------------------------------
-
-/// Rounded surface with hairline border, soft shadow (light mode) and a
-/// subtle hover/press response.
 class CivicCard extends StatefulWidget {
   const CivicCard({
     super.key,
@@ -170,7 +143,6 @@ class CivicCard extends StatefulWidget {
   final Color? color;
   final Color? borderColor;
 
-  /// No shadow — for nested panels.
   final bool flat;
 
   @override
@@ -214,7 +186,6 @@ class _CivicCardState extends State<CivicCard> {
   }
 }
 
-/// Brand gradient header used at the top of dashboards.
 class CivicHeroCard extends StatelessWidget {
   const CivicHeroCard({super.key, required this.child, this.padding});
   final Widget child;
@@ -236,7 +207,6 @@ class CivicHeroCard extends StatelessWidget {
         boxShadow: civic.cardShadow,
       ),
       child: Stack(children: [
-        // Soft decorative circles — purely visual.
         Positioned(
           right: -40,
           top: -40,
@@ -257,7 +227,6 @@ class CivicHeroCard extends StatelessWidget {
   }
 }
 
-/// Rounded-square tinted icon container.
 class CivicIconBadge extends StatelessWidget {
   const CivicIconBadge(
       {super.key, required this.icon, this.color, this.size = 40});
@@ -296,10 +265,6 @@ class CivicAvatar extends StatelessWidget {
         ),
       );
 }
-
-// ---------------------------------------------------------------------------
-// States
-// ---------------------------------------------------------------------------
 
 class CivicLoadingState extends StatelessWidget {
   const CivicLoadingState({super.key, this.label = 'Loading…'});
@@ -387,10 +352,6 @@ class CivicErrorState extends StatelessWidget {
                 onPressed: onRetry),
       );
 }
-
-// ---------------------------------------------------------------------------
-// Text & layout helpers
-// ---------------------------------------------------------------------------
 
 class CivicSectionHeader extends StatelessWidget {
   const CivicSectionHeader(this.title,
@@ -483,7 +444,6 @@ class CivicStatCard extends StatelessWidget {
   }
 }
 
-/// Responsive grid of tiles: column count follows available width.
 class AdaptiveGrid extends StatelessWidget {
   const AdaptiveGrid(
       {super.key,
@@ -510,7 +470,6 @@ class AdaptiveGrid extends StatelessWidget {
       });
 }
 
-/// Inline notice for honest "demo / simulation" disclosures and hints.
 class InfoBanner extends StatelessWidget {
   const InfoBanner({
     super.key,
@@ -554,7 +513,6 @@ class InfoBanner extends StatelessWidget {
   }
 }
 
-/// Small rounded label. [color] is a semantic hue; it is toned for dark mode.
 class Pill extends StatelessWidget {
   const Pill({super.key, required this.label, required this.color, this.icon});
   final String label;
@@ -570,8 +528,6 @@ class Pill extends StatelessWidget {
         color: context.civic.tint(color),
         borderRadius: BorderRadius.circular(Radii.pill),
       ),
-      // A single Text (icon as WidgetSpan) ellipsizes gracefully in any
-      // width, unlike an icon + text Row.
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 240),
         child: Text.rich(
@@ -596,7 +552,6 @@ class Pill extends StatelessWidget {
   }
 }
 
-/// Label/value row that stacks vertically on narrow widths.
 class LabeledValue extends StatelessWidget {
   const LabeledValue(this.label, this.value, {super.key, this.icon});
   final String label;
@@ -636,13 +591,8 @@ class LabeledValue extends StatelessWidget {
       );
 }
 
-// ---------------------------------------------------------------------------
-// Inputs
-// ---------------------------------------------------------------------------
-
 enum CivicButtonVariant { filled, tonal, outlined, text, danger }
 
-/// Button with variants, optional icon, loading state and full-width option.
 class CivicButton extends StatelessWidget {
   const CivicButton({
     super.key,
@@ -706,7 +656,6 @@ class CivicButton extends StatelessWidget {
   }
 }
 
-/// Labelled text field with helper guidance and consistent styling.
 class CivicTextField extends StatelessWidget {
   const CivicTextField({
     super.key,
@@ -760,10 +709,6 @@ class CivicTextField extends StatelessWidget {
       );
 }
 
-// ---------------------------------------------------------------------------
-// Feedback helpers
-// ---------------------------------------------------------------------------
-
 void showMessage(BuildContext context, String message, {bool error = false}) {
   final colors = Theme.of(context).colorScheme;
   ScaffoldMessenger.of(context)
@@ -781,7 +726,6 @@ void showMessage(BuildContext context, String message, {bool error = false}) {
     ));
 }
 
-/// Shared confirm-with-text dialog (reasons, notes). Returns null on cancel.
 Future<String?> promptForText(
   BuildContext context, {
   required String title,

@@ -31,7 +31,6 @@ class ComplaintDetailScreen extends StatelessWidget {
       {super.key, required this.complaintId, this.heroTag});
   final String complaintId;
 
-  /// Hero tag of the list thumbnail that opened this page, if any.
   final String? heroTag;
 
   @override
@@ -279,7 +278,6 @@ class _WorkOrderCard extends StatelessWidget {
       );
 }
 
-/// Before/after evidence side-by-side (stacks on narrow widths).
 class BeforeAfter extends StatelessWidget {
   const BeforeAfter({super.key, required this.job});
   final WorkJob job;

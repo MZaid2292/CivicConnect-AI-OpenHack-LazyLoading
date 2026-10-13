@@ -37,8 +37,6 @@ class AppNotification extends Equatable {
       [id, recipientId, title, body, at, complaintId, jobId, read];
 }
 
-/// In-app notification inbox. Push delivery (FCM / local notifications) is a
-/// later integration; this only powers the in-app list.
 abstract class NotificationRepository {
   Stream<List<AppNotification>> watchFor(String recipientId);
   Future<void> add(AppNotification notification);

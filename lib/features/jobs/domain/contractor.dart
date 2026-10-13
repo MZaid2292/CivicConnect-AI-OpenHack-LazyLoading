@@ -29,7 +29,6 @@ class Contractor extends Equatable {
   final String id;
   final String name;
 
-  /// Mock registration number for display only — not verified anywhere.
   final String registrationNo;
   final Set<ComplaintCategory> specialties;
   final ContractorStatus status;

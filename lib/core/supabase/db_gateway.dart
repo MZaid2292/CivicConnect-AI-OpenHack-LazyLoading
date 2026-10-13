@@ -4,11 +4,7 @@ import 'db_errors.dart';
 
 typedef Row = Map<String, dynamic>;
 
-/// Thin seam over PostgREST so repositories and services can be tested with
-/// an in-memory fake. Every call runs as the signed-in user, so Row Level
-/// Security and the database functions remain the authority.
 abstract class DbGateway {
-  /// Signed-in user's auth id, or null.
   String? get currentUserId;
 
   Future<List<Row>> select(
@@ -22,17 +18,14 @@ abstract class DbGateway {
     int? limit,
   });
 
-  /// Inserts one row and returns it as stored (defaults, triggers applied).
   Future<Row> insert(String table, Map<String, Object?> values);
 
   Future<void> delete(String table, Map<String, Object> match);
 
-  /// Updates rows matching [match] (and, if given, where [isNull] IS NULL).
   Future<void> update(
       String table, Map<String, Object?> values, Map<String, Object> match,
       {String? isNull});
 
-  /// Calls a database function (RPC).
   Future<dynamic> rpc(String function, [Map<String, Object?> params]);
 }
 

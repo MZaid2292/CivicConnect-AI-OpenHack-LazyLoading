@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Spacing scale (logical pixels). Use these instead of ad-hoc numbers.
 class Space {
   const Space._();
   static const double xxs = 2;
@@ -19,7 +18,6 @@ class Space {
   static const gapXl = SizedBox(width: xl, height: xl);
 }
 
-/// Corner radii.
 class Radii {
   const Radii._();
   static const double sm = 10;
@@ -34,17 +32,13 @@ class Radii {
   static final brXl = BorderRadius.circular(xl);
 }
 
-/// Layout breakpoints (logical width).
 class Breakpoints {
   const Breakpoints._();
 
-  /// Below this: phones — bottom navigation, single column.
   static const double medium = 600;
 
-  /// From this: tablets/foldables — navigation rail, two columns.
   static const double expanded = 900;
 
-  /// From this: desktop/web — extended sidebar.
   static const double large = 1200;
 }
 
@@ -58,7 +52,6 @@ WindowSize windowSizeOf(BuildContext context) {
   return WindowSize.compact;
 }
 
-/// Motion tokens. Respects the platform "reduce motion" setting.
 class Motion {
   const Motion._();
   static const fast = Duration(milliseconds: 150);

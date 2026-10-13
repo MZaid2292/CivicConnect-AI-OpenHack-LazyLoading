@@ -8,8 +8,6 @@ import '../models/app_role.dart';
 import '../models/media_attachment.dart';
 import '../utils/geo.dart';
 
-/// Realistic, internally consistent demo records (complaints ↔ jobs ↔
-/// contractors). Timestamps are relative to [now] so ages always look fresh.
 class DemoSeed {
   DemoSeed({required this.now, required this.center});
 

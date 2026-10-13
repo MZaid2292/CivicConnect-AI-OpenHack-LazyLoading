@@ -7,13 +7,6 @@ import '../domain/complaint.dart';
 import '../domain/priority_rules_repository.dart';
 import '../domain/services/priority_engine.dart';
 
-/// `priority_rules` (per municipality and category: base_score, age_weight,
-/// support_weight), saved only through `save_priority_rule`.
-///
-/// The database stores issue-type base points and the per-day / per-supporter
-/// weights. Severity words, caps and level thresholds have no server storage,
-/// so the editor keeps the app defaults for them and refuses to "save" changes
-/// to them rather than pretending they were stored.
 class SupabasePriorityRulesRepository implements PriorityRulesRepository {
   SupabasePriorityRulesRepository(this._db,
       {required this.municipalityId, PriorityRules? defaults})
@@ -22,7 +15,6 @@ class SupabasePriorityRulesRepository implements PriorityRulesRepository {
 
   final DbGateway _db;
 
-  /// The signed-in staff member's municipality (null for other users).
   String? Function() municipalityId;
   final PriorityRules _defaults;
   PriorityRules _current;
@@ -39,8 +31,6 @@ class SupabasePriorityRulesRepository implements PriorityRulesRepository {
         refresh().catchError((Object _) {});
       });
 
-  /// Builds rules from rows; the first row's weights apply to all categories
-  /// (the editor has one value for each weight).
   static PriorityRules fromRows(List<Row> rows, PriorityRules defaults) {
     if (rows.isEmpty) return defaults;
     final base = {...defaults.categoryBase};
@@ -94,7 +84,6 @@ class SupabasePriorityRulesRepository implements PriorityRulesRepository {
           'p_support_weight': rules.pointsPerSupporter,
         });
       } on WorkflowException catch (e) {
-        // "drainage" exists only after the pending migration.
         final drainageUnsupported = category == ComplaintCategory.drainage &&
             e.message.contains('Invalid complaint category');
         if (!drainageUnsupported) rethrow;

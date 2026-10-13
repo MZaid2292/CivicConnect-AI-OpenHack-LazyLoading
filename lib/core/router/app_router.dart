@@ -35,12 +35,6 @@ class Routes {
 
 const _authRoutes = {Routes.welcome, Routes.login, Routes.role};
 
-/// Client-side guard for demo navigation only. Real authorisation must be
-/// enforced server-side (Supabase RLS) in the integration phase.
-///
-/// While the session is restoring, the requested location is carried in
-/// `/loading?from=…` so a deep link (e.g. a browser reload of
-/// `/complaint/CMP-1001`) opens that screen once the role is known.
 String? sessionRedirect(SessionState session, Uri uri) {
   final location = uri.path;
   if (session.loading) {
@@ -53,8 +47,6 @@ String? sessionRedirect(SessionState session, Uri uri) {
   }
   final role = session.role;
   if (session.live) {
-    // Real accounts: the demo role selector is never reachable, and a deep
-    // link survives sign-in via `?from=`.
     if (role == null) {
       if (location == Routes.role) return Routes.login;
       if (location == Routes.welcome) {

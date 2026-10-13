@@ -49,10 +49,8 @@ class CreateComplaintState extends Equatable {
   final String description;
   final String address;
 
-  /// True while [address] is the GPS lookup result (not typed by the user).
   final bool addressAutoFilled;
 
-  /// Bumped when the cubit fills [address], so the view updates its field.
   final int addressFillId;
   final ComplaintCategory? category;
   final bool categoryManuallySet;
@@ -172,8 +170,6 @@ class CreateComplaintState extends Equatable {
       ];
 }
 
-/// View model for the report form. All intelligence (classification,
-/// duplicate detection, priority) comes from domain services.
 class CreateComplaintCubit extends Cubit<CreateComplaintState> {
   CreateComplaintCubit({
     required ComplaintService service,
@@ -228,7 +224,6 @@ class CreateComplaintCubit extends Cubit<CreateComplaintState> {
 
   void updateText({String? title, String? description, String? address}) {
     if (address != null && state.addressAutoFilled) {
-      // The user edited the suggestion: it is theirs now.
       emit(state.copyWith(addressAutoFilled: false));
     }
     emit(state.copyWith(
@@ -273,7 +268,6 @@ class CreateComplaintCubit extends Cubit<CreateComplaintState> {
       return;
     }
     final request = ++_duplicateRequest;
-    // A ward-centre fallback is not a real position — use text-only matching.
     final precise = state.locationSource == LocationSource.gps ||
         state.locationSource == LocationSource.manualPin;
     final result = await _service.findDuplicates(
@@ -311,10 +305,6 @@ class CreateComplaintCubit extends Cubit<CreateComplaintState> {
     _refreshDuplicates();
   }
 
-  /// Reverse-geocodes a GPS fix into the address field. A typed address is
-  /// never overwritten; an empty or previously auto-filled one is replaced.
-  /// If no address can be found, the coordinates are used so the report can
-  /// still be submitted (the user can edit them into a landmark).
   Future<void> _fillAddressFrom(GeoPoint point) async {
     final typedByUser =
         state.address.trim().isNotEmpty && !state.addressAutoFilled;
@@ -366,7 +356,7 @@ class CreateComplaintCubit extends Cubit<CreateComplaintState> {
     }
     try {
       final picked = await _media.pickImage(source);
-      if (picked == null || isClosed) return; // user cancelled
+      if (picked == null || isClosed) return;
       emit(state.copyWith(photos: [
         ...state.photos,
         MediaAttachment(
@@ -415,7 +405,6 @@ class CreateComplaintCubit extends Cubit<CreateComplaintState> {
         photos: state.photos,
       );
 
-  /// Returns false when validation or the duplicate decision blocks submit.
   Future<bool> submit() async {
     emit(state.copyWith(showValidation: true));
     if (!state.isValid) {
@@ -433,7 +422,6 @@ class CreateComplaintCubit extends Cubit<CreateComplaintState> {
           outcomeId: created.id));
       return true;
     } on PartialSubmitException catch (e) {
-      // The report exists; say exactly which photos did not upload.
       emit(state.copyWith(
           busy: false,
           error: e.message,

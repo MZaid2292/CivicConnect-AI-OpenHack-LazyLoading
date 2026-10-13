@@ -32,12 +32,6 @@ import '../supabase/db_gateway.dart';
 import '../supabase/live_sync.dart';
 import '../supabase/media_store.dart';
 
-/// Composition root. A single instance of every repository/service is shared
-/// by all roles, so a citizen's report shows up in the admin queue instantly.
-///
-/// [AppDependencies.live] wires the Supabase implementations of the same
-/// interfaces; the default constructor wires the local sample workflow used
-/// for development and tests.
 class AppDependencies {
   AppDependencies._({
     this.mode = const BackendMode.local(),
@@ -81,7 +75,6 @@ class AppDependencies {
       clock: clock,
     );
     return AppDependencies._(
-      // Tests can exercise the live auth flow over local data.
       mode: BackendMode(live: authRepository != null),
       authRepository: authRepository,
       config: config,
@@ -105,8 +98,6 @@ class AppDependencies {
     );
   }
 
-  /// Live Supabase backend: real accounts, RLS-protected data and secure
-  /// database functions for every workflow step.
   factory AppDependencies.live(
     SharedPreferences preferences,
     SupabaseClient client, {
@@ -153,7 +144,6 @@ class AppDependencies {
       rules.clear();
     }
 
-    // Load the account's municipality rules before dashboards build.
     auth.onProfileReady = (_) => rules.refresh().catchError((Object _) {});
     final sync = LiveSync(client, refreshAll: refreshAll, clearAll: clearAll)
       ..start();
@@ -187,7 +177,6 @@ class AppDependencies {
 
   final BackendMode mode;
 
-  /// Supabase Auth (live mode only).
   final AuthRepository? authRepository;
   final LiveSync? liveSync;
   final AppConfig config;
@@ -202,6 +191,5 @@ class AppDependencies {
   final LocationService locationService;
   final MediaPickerService mediaPicker;
 
-  /// GPS → readable address for the report form (OSM Nominatim).
   final ReverseGeocoder reverseGeocoder;
 }

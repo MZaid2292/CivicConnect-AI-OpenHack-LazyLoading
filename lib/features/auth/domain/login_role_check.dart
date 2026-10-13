@@ -3,17 +3,11 @@ import '../../../core/models/workflow_exception.dart';
 import '../../jobs/domain/contractor.dart';
 import 'auth_repository.dart';
 
-/// Raised when the role chosen on the sign-in screen is not what the trusted
-/// database profile allows. [pendingApproval] marks a contractor application
-/// that is still awaiting municipal review.
 class RoleAccessException extends WorkflowException {
   const RoleAccessException(super.message, {this.pendingApproval = false});
   final bool pendingApproval;
 }
 
-/// Compares the role picked on the sign-in screen with the account's trusted
-/// `profiles.role` (and contractor verification). The selection only chooses
-/// the flow — it never grants anything; a mismatch is refused.
 class LoginRoleCheck {
   const LoginRoleCheck._();
 

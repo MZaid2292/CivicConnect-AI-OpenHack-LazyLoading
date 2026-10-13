@@ -12,9 +12,6 @@ import 'job_repositories.dart';
 import 'job_workflow.dart';
 import 'work_job.dart';
 
-/// Contract / work-order use cases. Keeps the job state machine and the
-/// complaint state machine in step, and checks the actor's role and
-/// ownership for every action.
 class JobService {
   JobService({
     required JobRepository jobs,
@@ -37,14 +34,9 @@ class JobService {
 
   DateTime get _now => _clock();
 
-  /// Whether accepting an inspection also releases the simulated payment
-  /// (local workflow). On the server, finance does that separately.
   bool get inspectionReleasesPayment => true;
 
-  /// Whether bids are local mock records rather than server records.
   bool get bidsAreMock => true;
-
-  // ---- Admin ---------------------------------------------------------------
 
   Future<WorkJob> openTender(Actor actor, String complaintId,
       {required String title, required int budget}) async {
@@ -161,8 +153,6 @@ class JobService {
     await _contractors.save(c.copyWith(status: status));
   }
 
-  // ---- Contractor ------------------------------------------------------------
-
   Future<void> submitBid(Actor actor, String jobId,
       {required int amount, required int days, required String note}) async {
     requireRole(actor, {AppRole.contractor}, 'submit bids');
@@ -252,8 +242,6 @@ class JobService {
             : note.trim());
     await _jobs.save(job.copyWith(status: JobStatus.completionSubmitted));
   }
-
-  // ---- Helpers ---------------------------------------------------------------
 
   void _validateAmount(int amount) {
     if (amount <= 0 || amount > 50000000) {

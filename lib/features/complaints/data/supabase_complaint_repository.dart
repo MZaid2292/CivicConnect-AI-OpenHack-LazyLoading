@@ -13,9 +13,6 @@ import '../domain/services/priority_engine.dart';
 
 const complaintImagesBucket = 'complaint-images';
 
-/// Category suggestion recorded by the database (`suggested_category`,
-/// `classification_method`) when the app's own keyword match disagrees or is
-/// unavailable. No confidence is invented.
 class ServerClassification extends ClassificationResult {
   ServerClassification(ComplaintCategory suggested, this.method)
       : super([
@@ -32,10 +29,8 @@ class ServerClassification extends ClassificationResult {
       '(${method.replaceAll('_', ' ')}): ${top!.category.label}.';
 }
 
-/// Display name + role for a user id, when the viewer may see them.
 typedef Person = (String name, AppRole? role);
 
-/// Rows needed to assemble complaints (one query per table).
 class ComplaintRows {
   const ComplaintRows({
     required this.complaints,
@@ -61,7 +56,6 @@ class ComplaintRows {
   final Map<String, String> signedUrls;
 }
 
-/// Pure mapping from database rows to [Complaint]s.
 class ComplaintAssembler {
   const ComplaintAssembler(
       {this.classifier = const KeywordCategoryClassifier()});
@@ -202,7 +196,6 @@ class ComplaintAssembler {
     final oldStatus = u['old_status'] as String?;
     final newStatus = u['new_status'] as String?;
     var note = (u['remarks'] as String?)?.trim();
-    // review_duplicate records a link without a status change.
     final linked = oldStatus == newStatus &&
         (note?.startsWith('Linked to complaint') ?? false);
     if (note != null) {
@@ -235,18 +228,12 @@ class ComplaintAssembler {
       String title, String description, String? suggested, String? method) {
     if (suggested == null) return const ClassificationResult.empty();
     final server = DbCodec.categoryFrom(suggested);
-    // Show the matched keywords only when the app's rules agree with the
-    // server's suggestion; otherwise report the server's result as-is.
     final local = classifier.classify(title, description);
     if (local.top?.category == server) return local;
     return ServerClassification(server, method ?? 'keyword rules');
   }
 }
 
-/// Complaints from Supabase. Reads go straight to the tables (RLS applies);
-/// every state change goes through the secure database functions in
-/// `SupabaseComplaintService`. Drafts exist only on this device — the
-/// database has no draft state.
 class SupabaseComplaintRepository implements ComplaintRepository {
   SupabaseComplaintRepository(this._db, this._media,
       {this.assembler = const ComplaintAssembler(), this.rowLimit = 1000}) {
@@ -263,7 +250,6 @@ class SupabaseComplaintRepository implements ComplaintRepository {
   bool _namesRpcAvailable = true;
   int _draftCounter = 1;
 
-  /// Database uuid for a reference code (after the first load).
   String? uuidOf(String reference) => _uuidByRef[reference];
 
   Future<String> requireUuid(String reference) async {
@@ -275,7 +261,6 @@ class SupabaseComplaintRepository implements ComplaintRepository {
 
   Future<void> refresh() => _live.refresh();
 
-  /// Forgets everything (sign-out), including device drafts.
   void clear() {
     _live.clear();
     _drafts.clear();
@@ -309,7 +294,6 @@ class SupabaseComplaintRepository implements ComplaintRepository {
     _drafts
       ..removeWhere((d) => d.id == complaint.id)
       ..insert(0, complaint);
-    // Re-emit so open screens show the draft (without faking a load).
     if (_live.isLoaded) {
       _live.emitLocal(_live.snapshot);
     } else {
@@ -324,7 +308,6 @@ class SupabaseComplaintRepository implements ComplaintRepository {
     }
   }
 
-  /// Drops a local draft once it has been submitted to the server.
   void removeDraft(String id) => _drafts.removeWhere((d) => d.id == id);
 
   Future<List<Complaint>> _load() async {
@@ -377,10 +360,6 @@ class SupabaseComplaintRepository implements ComplaintRepository {
     ));
   }
 
-  /// Names and roles the viewer is allowed to see. Profiles are private by
-  /// RLS (own row, or all rows for staff); the optional
-  /// `get_display_names` function from the pending migration exposes only
-  /// display name + role.
   Future<Map<String, Person>> _people(Set<String> ids) async {
     final out = <String, Person>{};
     void add(Row p) => out[p['id'] as String] = (

@@ -1,4 +1,3 @@
-/// Lightweight text normalisation used by rule-based NLP services.
 library;
 
 const _stopWords = {
@@ -56,14 +55,12 @@ const _stopWords = {
   'just',
 };
 
-/// Lower-cases and strips punctuation, collapsing whitespace.
 String normalizeText(String input) => input
     .toLowerCase()
     .replaceAll(RegExp(r'[^a-z0-9\s]'), ' ')
     .replaceAll(RegExp(r'\s+'), ' ')
     .trim();
 
-/// Very small suffix stemmer so "potholes" and "pothole" compare equal.
 String stem(String token) {
   if (token.length > 4 && token.endsWith('ies')) {
     return '${token.substring(0, token.length - 3)}y';
@@ -80,14 +77,12 @@ String stem(String token) {
   return token;
 }
 
-/// Normalised, stemmed tokens without stop words.
 Set<String> tokenize(String input) => normalizeText(input)
     .split(' ')
     .where((t) => t.length > 1 && !_stopWords.contains(t))
     .map(stem)
     .toSet();
 
-/// Jaccard similarity |A∩B| / |A∪B| of the token sets (0..1).
 double jaccardSimilarity(String a, String b) {
   final ta = tokenize(a);
   final tb = tokenize(b);
@@ -97,6 +92,5 @@ double jaccardSimilarity(String a, String b) {
   return intersection / union;
 }
 
-/// Shared tokens, useful for explaining a similarity score to users.
 Set<String> sharedTokens(String a, String b) =>
     tokenize(a).intersection(tokenize(b));

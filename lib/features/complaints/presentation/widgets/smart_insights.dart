@@ -8,7 +8,6 @@ import '../../domain/services/category_classifier.dart';
 import '../../domain/services/priority_engine.dart';
 import 'badges.dart';
 
-/// Frame for algorithm output. Always labels the method honestly.
 class SmartInsightCard extends StatelessWidget {
   const SmartInsightCard({
     super.key,
@@ -59,7 +58,6 @@ class SmartInsightCard extends StatelessWidget {
       );
 }
 
-/// Top keyword-matched categories with their share of matched evidence.
 class CategoryMatchBars extends StatelessWidget {
   const CategoryMatchBars(
       {super.key, required this.classification, this.max = 3});
@@ -111,7 +109,6 @@ class CategoryMatchBars extends StatelessWidget {
   }
 }
 
-/// Matched phrases as small chips.
 class MatchedTerms extends StatelessWidget {
   const MatchedTerms({super.key, required this.terms});
   final List<String> terms;
@@ -131,7 +128,6 @@ class MatchedTerms extends StatelessWidget {
       ]);
 }
 
-/// Score bar with the municipality's level thresholds marked.
 class PriorityMeter extends StatelessWidget {
   const PriorityMeter(
       {super.key, required this.assessment, required this.rules});
@@ -216,7 +212,6 @@ class PriorityMeter extends StatelessWidget {
   }
 }
 
-/// Factor breakdown table for a priority assessment.
 class PriorityFactors extends StatelessWidget {
   const PriorityFactors({super.key, required this.assessment});
   final PriorityAssessment assessment;

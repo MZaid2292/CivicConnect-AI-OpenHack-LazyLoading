@@ -17,7 +17,6 @@ import '../../../jobs/domain/work_job.dart';
 import '../../../jobs/presentation/cubit/job_list_cubits.dart';
 import '../../../jobs/presentation/widgets/job_card.dart';
 
-/// Jobs / tenders and contractor management.
 class WorkTab extends StatelessWidget {
   const WorkTab({super.key});
 

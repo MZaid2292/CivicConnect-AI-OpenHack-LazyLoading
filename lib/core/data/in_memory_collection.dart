@@ -1,9 +1,5 @@
 import 'dart:async';
 
-/// Tiny reactive in-memory table used by mock repositories.
-///
-/// Every change re-emits a fresh unmodifiable snapshot so all screens bound to
-/// the same repository instance update immediately, across roles.
 class InMemoryCollection<T> {
   InMemoryCollection(Iterable<T> seed, this._idOf) : _items = [...seed];
 
@@ -27,7 +23,6 @@ class InMemoryCollection<T> {
     return null;
   }
 
-  /// Upserts (new items go first so feeds show newest first).
   void upsert(T item, {bool notify = true}) {
     final index = _items.indexWhere((e) => _idOf(e) == _idOf(item));
     if (index == -1) {

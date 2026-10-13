@@ -69,19 +69,16 @@ class _CreateComplaintViewState extends State<_CreateComplaintView> {
   void _listener(BuildContext context, CreateComplaintState state) {
     if (state.error != null) showMessage(context, state.error!, error: true);
     if (state.addressFillId != _addressFillId) {
-      // GPS address lookup filled the field; it stays editable.
       _addressFillId = state.addressFillId;
       _address.text = state.address;
     }
     if (!state.loadingDraft && _title.text.isEmpty && state.title.isNotEmpty) {
-      // Populate the fields once after a draft finishes loading.
       _title.text = state.title;
       _description.text = state.description;
       _address.text = state.address;
     }
     switch (state.outcome) {
       case CreateOutcome.submitted:
-        // A partial photo-upload warning (state.error) is already showing.
         if (state.error == null) {
           showMessage(context, '${state.outcomeId} submitted. Thank you!');
         }
@@ -112,9 +109,6 @@ class _CreateComplaintViewState extends State<_CreateComplaintView> {
     }
   }
 
-  /// Take a new photo or choose one already on the device (e.g. taken
-  /// offline earlier). Both go through the same picker, size/type checks and
-  /// private upload.
   Future<void> _pickPhoto(CreateComplaintCubit cubit) async {
     final camera = await askCameraOrGallery(context);
     if (camera == null) return;
@@ -295,7 +289,6 @@ class _SubmitBar extends StatelessWidget {
       );
 }
 
-/// Numbered form section card.
 class _Section extends StatelessWidget {
   const _Section({
     required this.step,
@@ -572,7 +565,6 @@ class _LocationSection extends StatelessWidget {
   }
 }
 
-/// Priority preview + duplicate check, both computed by domain services.
 class _SmartChecks extends StatelessWidget {
   const _SmartChecks({required this.state, required this.duplicatesKey});
   final CreateComplaintState state;

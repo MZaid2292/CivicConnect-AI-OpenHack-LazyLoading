@@ -16,7 +16,6 @@ extension PriorityLevelInfo on PriorityLevel {
       };
 }
 
-/// Municipality-configurable scoring rules.
 class PriorityRules extends Equatable {
   const PriorityRules({
     required this.categoryBase,
@@ -139,7 +138,6 @@ class PriorityAssessment extends Equatable {
   List<Object?> get props => [score, level, factors];
 }
 
-/// Deterministic, explainable priority scoring.
 class PriorityEngine {
   const PriorityEngine();
 
@@ -190,7 +188,6 @@ class PriorityEngine {
     return PriorityLevel.low;
   }
 
-  /// Convenience for re-scoring an existing complaint.
   PriorityAssessment assessComplaint(
           Complaint c, PriorityRules rules, DateTime now) =>
       assess(

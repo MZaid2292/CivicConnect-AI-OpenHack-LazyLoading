@@ -11,7 +11,6 @@ import '../domain/work_job.dart';
 
 const repairEvidenceBucket = 'repair-evidence';
 
-/// Rows needed to assemble work jobs.
 class JobRows {
   const JobRows({
     required this.jobs,
@@ -35,8 +34,6 @@ class JobRows {
   final Map<String, String> signedUrls;
 }
 
-/// Pure mapping: jobs + contracts (+ bids, evidence, inspections, simulated
-/// payments) → [WorkJob].
 class JobAssembler {
   const JobAssembler();
 
@@ -52,7 +49,7 @@ class JobAssembler {
     final out = <WorkJob>[];
     for (final j in r.jobs) {
       final complaint = complaintById[j['complaint_id']];
-      if (complaint == null) continue; // not visible to this user
+      if (complaint == null) continue;
       final contract = contractByJob[j['id']];
       final contractId = contract?['id'] as String?;
       final evidence = contractId == null
@@ -159,8 +156,6 @@ class JobAssembler {
   }
 }
 
-/// Work orders from Supabase. Read-only here; changes go through the
-/// database functions in `SupabaseJobService`.
 class SupabaseJobRepository implements JobRepository {
   SupabaseJobRepository(this._db, this._media,
       {this.assembler = const JobAssembler(), this.rowLimit = 1000}) {
@@ -183,7 +178,6 @@ class SupabaseJobRepository implements JobRepository {
     _contractUuidByRef.clear();
   }
 
-  /// Contract uuid for a job display id (after load).
   Future<String> requireContractId(String jobRef) async {
     if (!_contractUuidByRef.containsKey(jobRef)) await _live.refresh();
     final id = _contractUuidByRef[jobRef];
@@ -258,7 +252,6 @@ class SupabaseJobRepository implements JobRepository {
   }
 }
 
-/// Pure mapping for contractor profiles with real ratings and job counts.
 class ContractorAssembler {
   const ContractorAssembler();
 

@@ -6,7 +6,6 @@ import '../../../../core/utils/geo.dart';
 import '../../../../core/widgets/civic_map.dart';
 import '../../../../core/widgets/civic_widgets.dart';
 
-/// Full-screen map: tap to drop a pin, then confirm. Works without GPS.
 class LocationPickerScreen extends StatefulWidget {
   const LocationPickerScreen({super.key, required this.config, this.initial});
   final AppConfig config;

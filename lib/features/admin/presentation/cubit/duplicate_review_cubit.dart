@@ -36,7 +36,6 @@ class DuplicateReviewState extends Equatable {
   List<Object?> get props => [status, items, message, error, eventId];
 }
 
-/// Re-runs duplicate detection across the open queue whenever data changes.
 class DuplicateReviewCubit extends Cubit<DuplicateReviewState> {
   DuplicateReviewCubit(
       {required ComplaintRepository complaints,

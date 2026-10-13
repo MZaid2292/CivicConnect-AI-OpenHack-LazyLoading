@@ -10,9 +10,6 @@ import '../../../core/supabase/db_gateway.dart';
 import '../domain/auth_repository.dart';
 import 'contractor_applications.dart';
 
-/// Supabase Auth + the trusted `profiles` row. The session is persisted by
-/// supabase_flutter (secure local storage on Android, browser storage on web)
-/// and refreshed automatically.
 class SupabaseAuthRepository implements AuthRepository {
   SupabaseAuthRepository(this._client, this._db, this._applications,
       {String? redirectUrl})
@@ -40,12 +37,8 @@ class SupabaseAuthRepository implements AuthRepository {
   StreamSubscription<AuthState>? _sub;
   UserProfile? _profile;
 
-  /// Awaited after a profile loads (e.g. to fetch municipality rules before
-  /// the dashboard builds).
   Future<void> Function(UserProfile profile)? onProfileReady;
 
-  /// Where email links (confirmation, password reset) return to. Add this URL
-  /// to Supabase → Authentication → URL Configuration → Redirect URLs.
   static String defaultRedirectUrl() =>
       kIsWeb ? Uri.base.origin : 'io.supabase.civicconnect://login-callback/';
 
@@ -58,7 +51,6 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<UserProfile?> restore() async {
     if (_client.auth.currentSession == null) return null;
-    // Opened from the confirmation link: send a locally kept application.
     final user = _client.auth.currentUser;
     if (user != null) {
       try {
@@ -80,8 +72,6 @@ class SupabaseAuthRepository implements AuthRepository {
     } catch (e) {
       throw translateDbError(e);
     }
-    // First sign-in after confirming the email: send the contractor
-    // application kept on this device during sign-up.
     final user = _client.auth.currentUser;
     if (user != null) {
       await _applications.completePending(user.id, user.email ?? email);
@@ -101,7 +91,6 @@ class SupabaseAuthRepository implements AuthRepository {
     }
     final AuthResponse response;
     try {
-      // Same citizen sign-up as everyone else: no role is sent.
       response = await _client.auth.signUp(
         email: email.trim(),
         password: password,
@@ -127,8 +116,6 @@ class SupabaseAuthRepository implements AuthRepository {
       String name, String email, String password) async {
     final AuthResponse response;
     try {
-      // Only a display name is sent. The role is never client-supplied: the
-      // database creates the profile as a citizen.
       response = await _client.auth.signUp(
         email: email.trim(),
         password: password,
@@ -151,9 +138,7 @@ class SupabaseAuthRepository implements AuthRepository {
     _profile = null;
     try {
       await _client.auth.signOut();
-    } catch (_) {
-      // Local session is cleared even if the network call fails.
-    }
+    } catch (_) {}
   }
 
   @override
@@ -200,8 +185,6 @@ class SupabaseAuthRepository implements AuthRepository {
     return profile;
   }
 
-  /// Reads the trusted profile, municipality and (for contractors and
-  /// applicants) the owned contractor record.
   static Future<UserProfile> loadProfile(
       DbGateway db, String userId, String email) async {
     final rows = await db.select('profiles', eq: {'id': userId}, limit: 1);

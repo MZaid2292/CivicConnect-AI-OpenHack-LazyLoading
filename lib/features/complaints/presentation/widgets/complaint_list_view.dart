@@ -13,7 +13,6 @@ import '../cubit/complaint_list_cubit.dart';
 import 'badges.dart';
 import 'complaint_card.dart';
 
-/// Status filter presets shown as chips.
 class StatusPreset {
   const StatusPreset(this.label, this.statuses);
   final String label;
@@ -36,9 +35,6 @@ class StatusPreset {
   ];
 }
 
-/// Search + status/category filters + sort + results, bound to a
-/// [ComplaintListCubit] provided above. Cards on phones (one column, two on
-/// tablets); optional table layout on desktop for admin queues.
 class ComplaintListView extends StatefulWidget {
   const ComplaintListView({
     super.key,
@@ -153,7 +149,6 @@ class _ComplaintListViewState extends State<ComplaintListView> {
                       itemBuilder: (context, i) => _card(context, items[i]),
                     );
                   }
-                  // Two-column masonry-free grid: pair rows.
                   final rows = (items.length / 2).ceil();
                   return SliverList.separated(
                     itemCount: rows,
@@ -215,7 +210,6 @@ class _ComplaintListViewState extends State<ComplaintListView> {
       );
 }
 
-/// Constrains a sliver's cross-axis width and centers it.
 class SliverCrossAxisConstrained extends StatelessWidget {
   const SliverCrossAxisConstrained(
       {super.key, required this.maxWidth, required this.sliver});
@@ -349,7 +343,6 @@ class _FilterBar extends StatelessWidget {
   }
 }
 
-/// Desktop admin table: scan many reports at once; rows open the detail.
 class _ComplaintTable extends StatelessWidget {
   const _ComplaintTable({required this.items, required this.onOpen});
   final List<Complaint> items;

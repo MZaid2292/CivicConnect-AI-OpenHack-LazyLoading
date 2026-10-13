@@ -8,7 +8,6 @@ import '../../../../core/widgets/media_widgets.dart';
 import '../../domain/complaint.dart';
 import 'badges.dart';
 
-/// Hero tag shared by a complaint card thumbnail and the detail gallery.
 String complaintHeroTag(String scope, String id) => 'complaint-$scope-$id';
 
 class CivicComplaintCard extends StatelessWidget {
@@ -25,7 +24,6 @@ class CivicComplaintCard extends StatelessWidget {
   final Widget? trailing;
   final bool showPriority;
 
-  /// When set, the thumbnail animates into the detail gallery.
   final String? heroScope;
 
   @override

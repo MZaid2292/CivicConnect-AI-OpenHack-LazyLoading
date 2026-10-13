@@ -2,10 +2,6 @@ import '../../../core/models/app_role.dart';
 import '../../../core/models/workflow_exception.dart';
 import 'complaint.dart';
 
-/// Explicit complaint state machine: which transitions exist and which role
-/// may trigger each. Shared by the mock repository (state check) and the
-/// domain services (state + role check) so a future Supabase backend can mirror
-/// the same table in RLS / database functions.
 class ComplaintWorkflow {
   const ComplaintWorkflow._();
 
@@ -46,7 +42,6 @@ class ComplaintWorkflow {
     ComplaintStatus.duplicate: {},
   };
 
-  /// Pure state check (no role).
   static bool isValidTransition(ComplaintStatus from, ComplaintStatus to) =>
       transitions[from]?.containsKey(to) ?? false;
 
@@ -72,7 +67,6 @@ class ComplaintWorkflow {
           .where((e) => e.value.contains(role))
           .map((e) => e.key);
 
-  /// The "happy path" used to draw progress in the status tracker.
   static const happyPath = [
     ComplaintStatus.submitted,
     ComplaintStatus.verified,

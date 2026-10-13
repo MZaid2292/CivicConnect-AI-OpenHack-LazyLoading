@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/utils/text_similarity.dart';
 import '../complaint.dart';
 
-/// One category's score with the exact phrases that produced it.
 class CategorySuggestion extends Equatable {
   const CategorySuggestion({
     required this.category,
@@ -14,7 +13,6 @@ class CategorySuggestion extends Equatable {
   final ComplaintCategory category;
   final double score;
 
-  /// Share of total keyword evidence (0..1). Not a statistical probability.
   final double confidence;
   final List<String> matchedTerms;
 
@@ -26,7 +24,6 @@ class ClassificationResult extends Equatable {
   const ClassificationResult(this.suggestions);
   const ClassificationResult.empty() : suggestions = const [];
 
-  /// Sorted best-first; only categories with at least one matched phrase.
   final List<CategorySuggestion> suggestions;
 
   CategorySuggestion? get top => suggestions.isEmpty ? null : suggestions.first;
@@ -46,10 +43,6 @@ class ClassificationResult extends Equatable {
   List<Object?> get props => [suggestions];
 }
 
-/// Explainable, rule-based text classifier (keyword / phrase weights).
-///
-/// This is deliberately simple NLP — no ML model and no image analysis. Each
-/// match is reported back to the user so they can understand and correct it.
 class KeywordCategoryClassifier {
   const KeywordCategoryClassifier({this.rules = defaultRules});
 

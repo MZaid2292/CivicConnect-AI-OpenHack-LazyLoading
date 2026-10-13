@@ -6,16 +6,6 @@ import '../../../core/models/workflow_exception.dart';
 import '../../../core/supabase/db_gateway.dart';
 import '../domain/auth_repository.dart';
 
-/// Contractor self-registration against the existing schema:
-/// * the application is a row in `contractors` inserted by the applicant
-///   under the existing `contractors_apply` RLS policy (owner = caller,
-///   status 'pending', valid municipality);
-/// * `UNIQUE(owner_id)` keeps it to one application per account;
-/// * approval stays with `verify_contractor` (municipal admin only).
-///
-/// When email confirmation is required there is no session at sign-up, so
-/// the application details (never the password) are kept on this device and
-/// sent on the first sign-in with the same email.
 class ContractorApplications {
   ContractorApplications(this._db, this._prefs);
 
@@ -37,8 +27,6 @@ class ContractorApplications {
     }
   }
 
-  /// Inserts the pending application for the signed-in [userId] unless one
-  /// already exists. Returns false when an application already existed.
   Future<bool> submit(String userId, ContractorApplication app) async {
     final existing = await _db.select('contractors',
         columns: 'id', eq: {'owner_id': userId}, limit: 1);
@@ -60,7 +48,6 @@ class ContractorApplications {
     }
   }
 
-  /// Stores application details (no password) until the email is confirmed.
   Future<void> savePending(String email, ContractorApplication app) =>
       _prefs.setString(
           _key,
@@ -89,8 +76,6 @@ class ContractorApplications {
     }
   }
 
-  /// Sends a locally kept application after the first confirmed sign-in.
-  /// Returns true when an application was submitted.
   Future<bool> completePending(String userId, String email) async {
     final app = pendingFor(email);
     if (app == null) return false;

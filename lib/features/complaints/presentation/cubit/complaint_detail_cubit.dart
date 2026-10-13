@@ -29,7 +29,6 @@ class ComplaintDetailState extends Equatable {
   final WorkJob? job;
   final bool busy;
 
-  /// One-shot feedback for snackbars; [eventId] makes repeats distinct.
   final String? message;
   final String? error;
   final int eventId;
@@ -121,7 +120,6 @@ class ComplaintDetailCubit extends Cubit<ComplaintDetailState> {
     }
   }
 
-  // Citizen
   Future<void> toggleSupport() {
     final supporting =
         state.complaint?.supporterIds.contains(actor.id) ?? false;
@@ -138,7 +136,6 @@ class ComplaintDetailCubit extends Cubit<ComplaintDetailState> {
           _complaintService.rateResolution(actor, complaintId, rating, comment),
       'Thanks for rating the work!');
 
-  // Admin
   Future<void> verify(String department, String note) => _run(
       () => _complaintService.verify(actor, complaintId,
           department: department, note: note),

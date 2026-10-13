@@ -3,7 +3,6 @@ import '../../complaints/domain/services/priority_engine.dart';
 import '../../jobs/domain/contractor.dart';
 import '../../jobs/domain/work_job.dart';
 
-/// Dashboard KPIs derived from repository snapshots (pure, testable).
 class AdminStats {
   AdminStats({
     required List<Complaint> complaints,

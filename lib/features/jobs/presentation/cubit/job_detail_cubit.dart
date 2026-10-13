@@ -34,7 +34,6 @@ class JobDetailState extends Equatable {
   final String? error;
   final int eventId;
 
-  /// Set after a terminal action (e.g. inspection decision) to pop the page.
   final bool done;
 
   JobDetailState copyWith({
@@ -125,7 +124,6 @@ class JobDetailCubit extends Cubit<JobDetailState> {
     }
   }
 
-  // Admin
   Future<void> award(String bidId) => _run(
       () => _service.awardBid(actor, jobId, bidId),
       'Bid awarded. The contractor has been notified.');
@@ -139,7 +137,6 @@ class JobDetailCubit extends Cubit<JobDetailState> {
           : 'Rework requested. The contractor has been notified.',
       done: true);
 
-  // Contractor
   Future<void> submitBid(int amount, int days, String note) => _run(
       () => _service.submitBid(actor, jobId,
           amount: amount, days: days, note: note),
@@ -160,7 +157,7 @@ class JobDetailCubit extends Cubit<JobDetailState> {
   Future<void> addEvidence(EvidenceStage stage, MediaSource source) async {
     try {
       final picked = await _media.pickImage(source);
-      if (picked == null) return; // cancelled
+      if (picked == null) return;
       await _run(
           () => _service.addEvidence(
               actor,

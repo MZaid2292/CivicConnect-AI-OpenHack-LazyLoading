@@ -20,9 +20,6 @@ class MapPin {
 
 LatLng toLatLng(GeoPoint p) => LatLng(p.latitude, p.longitude);
 
-/// Thin wrapper over flutter_map with OSM attribution and a configurable tile
-/// source. When `config.tileUrlTemplate` is null (tests/offline) a neutral grid
-/// is drawn instead so no network requests are made.
 class CivicMap extends StatelessWidget {
   const CivicMap({
     super.key,
@@ -72,7 +69,6 @@ class CivicMap extends StatelessWidget {
               urlTemplate: tileUrl,
               userAgentPackageName: config.tileUserAgentPackageName,
               maxNativeZoom: 19,
-              // Darken OSM tiles in dark mode instead of fetching other tiles.
               tileBuilder: dark ? darkModeTileBuilder : null,
             )
           else

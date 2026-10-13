@@ -8,6 +8,7 @@ import '../../../../core/models/app_role.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/tokens.dart';
+import '../../../../core/utils/greeting.dart';
 import '../../../../core/widgets/civic_widgets.dart';
 import '../../../auth/presentation/cubit/session_cubit.dart';
 import '../../../complaints/domain/complaint.dart';
@@ -61,10 +62,6 @@ class CitizenHome extends StatelessWidget {
   }
 }
 
-String _greeting(DateTime now) => now.hour < 12
-    ? 'Good morning'
-    : (now.hour < 17 ? 'Good afternoon' : 'Good evening');
-
 class CitizenFeedTab extends StatelessWidget {
   const CitizenFeedTab({super.key});
 
@@ -115,7 +112,8 @@ class _CitizenHeader extends StatelessWidget {
             ),
           ]),
           Space.gapSm,
-          Text('${_greeting(DateTime.now())}, $firstName',
+          TimeGreeting(
+              name: firstName,
               style: context.textStyles.headlineSmall
                   ?.copyWith(color: Colors.white)),
           Space.gapXs,

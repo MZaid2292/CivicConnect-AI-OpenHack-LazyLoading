@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/models/app_role.dart';
 import '../../../../core/models/workflow_exception.dart';
 import '../../domain/auth_repository.dart';
+import '../../domain/login_role_check.dart';
 import '../../domain/session_repository.dart';
 
 class SessionState extends Equatable {
@@ -54,6 +55,10 @@ class SessionCubit extends Cubit<SessionState> {
   final AuthRepository? _auth;
   StreamSubscription<AuthEvent>? _authSub;
 
+  /// True while an explicit sign-in/sign-up runs: its own role check decides
+  /// what to show, so the auth listener must not open a dashboard first.
+  bool _authenticating = false;
+
   bool get isLive => _auth != null;
 
   Future<void> restoreSession() async {
@@ -88,10 +93,47 @@ class SessionCubit extends Cubit<SessionState> {
     emit(SessionState(role: role, loading: false, onboardingSeen: true));
   }
 
-  Future<void> signIn(String email, String password) async {
-    final profile = await _requireAuth().signIn(email, password);
+  /// Signs in and checks the role chosen on the sign-in screen ([as])
+  /// against the trusted profile. On a mismatch the session is closed again
+  /// and a [RoleAccessException] is thrown — no dashboard is ever exposed.
+  Future<void> signIn(String email, String password, {AppRole? as}) async {
+    final auth = _requireAuth();
+    _authenticating = true;
+    final UserProfile profile;
+    try {
+      profile = await auth.signIn(email, password);
+    } finally {
+      _authenticating = false;
+    }
+    final problem = as == null ? null : LoginRoleCheck.problem(profile, as);
+    if (problem != null) {
+      await auth.signOut();
+      _emitLive(null, onboardingSeen: true);
+      throw problem;
+    }
     await _repository.markOnboardingSeen();
     _emitLive(profile, onboardingSeen: true);
+  }
+
+  Future<List<MunicipalityOption>> listMunicipalities() =>
+      _requireAuth().listMunicipalities();
+
+  /// Contractor self-registration. The account stays signed out of any
+  /// dashboard: the application must be approved by the municipality first.
+  Future<ContractorSignUpOutcome> signUpContractor(String name, String email,
+      String password, ContractorApplication application) async {
+    final auth = _requireAuth();
+    _authenticating = true;
+    final ContractorSignUpOutcome outcome;
+    try {
+      outcome = await auth.signUpContractor(name, email, password, application);
+      if (outcome == ContractorSignUpOutcome.submitted) await auth.signOut();
+    } finally {
+      _authenticating = false;
+    }
+    await _repository.markOnboardingSeen();
+    _emitLive(null, onboardingSeen: true);
+    return outcome;
   }
 
   /// Returns true when signed in; false when the email must be confirmed.
@@ -136,7 +178,7 @@ class SessionCubit extends Cubit<SessionState> {
             onboardingSeen: true, recoveringPassword: profile != null);
       case AuthEvent.signedIn:
         // E.g. returning from an email confirmation link.
-        if (state.profile == null && !state.loading) {
+        if (state.profile == null && !state.loading && !_authenticating) {
           try {
             final profile = await _auth!.restore();
             if (profile != null) _emitLive(profile, onboardingSeen: true);

@@ -8,12 +8,14 @@ import '../../../core/supabase/db_codec.dart';
 import '../../../core/supabase/db_errors.dart';
 import '../../../core/supabase/db_gateway.dart';
 import '../domain/auth_repository.dart';
+import 'contractor_applications.dart';
 
 /// Supabase Auth + the trusted `profiles` row. The session is persisted by
 /// supabase_flutter (secure local storage on Android, browser storage on web)
 /// and refreshed automatically.
 class SupabaseAuthRepository implements AuthRepository {
-  SupabaseAuthRepository(this._client, this._db, {String? redirectUrl})
+  SupabaseAuthRepository(this._client, this._db, this._applications,
+      {String? redirectUrl})
       : _redirectUrl = redirectUrl ?? defaultRedirectUrl() {
     _sub = _client.auth.onAuthStateChange.listen((s) {
       switch (s.event) {
@@ -32,6 +34,7 @@ class SupabaseAuthRepository implements AuthRepository {
 
   final SupabaseClient _client;
   final DbGateway _db;
+  final ContractorApplications _applications;
   final String _redirectUrl;
   final _events = StreamController<AuthEvent>.broadcast();
   StreamSubscription<AuthState>? _sub;
@@ -55,6 +58,15 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<UserProfile?> restore() async {
     if (_client.auth.currentSession == null) return null;
+    // Opened from the confirmation link: send a locally kept application.
+    final user = _client.auth.currentUser;
+    if (user != null) {
+      try {
+        await _applications.completePending(user.id, user.email ?? '');
+      } on WorkflowException {
+        // Kept locally and retried on the next sign-in.
+      }
+    }
     return _profile = await _loadProfile();
   }
 
@@ -68,7 +80,46 @@ class SupabaseAuthRepository implements AuthRepository {
     } catch (e) {
       throw translateDbError(e);
     }
+    // First sign-in after confirming the email: send the contractor
+    // application kept on this device during sign-up.
+    final user = _client.auth.currentUser;
+    if (user != null) {
+      await _applications.completePending(user.id, user.email ?? email);
+    }
     return _profile = await _loadProfile();
+  }
+
+  @override
+  Future<List<MunicipalityOption>> listMunicipalities() =>
+      _applications.listMunicipalities();
+
+  @override
+  Future<ContractorSignUpOutcome> signUpContractor(String name, String email,
+      String password, ContractorApplication application) async {
+    if (application.businessName.trim().length < 2) {
+      throw const WorkflowException('Enter your business name.');
+    }
+    final AuthResponse response;
+    try {
+      // Same citizen sign-up as everyone else: no role is sent.
+      response = await _client.auth.signUp(
+        email: email.trim(),
+        password: password,
+        data: {'display_name': name.trim()},
+        emailRedirectTo: _redirectUrl,
+      );
+    } on AuthException catch (e) {
+      throw authError(e);
+    } catch (e) {
+      throw translateDbError(e);
+    }
+    final user = response.user;
+    if (response.session == null || user == null) {
+      await _applications.savePending(email, application);
+      return ContractorSignUpOutcome.confirmEmailFirst;
+    }
+    await _applications.submit(user.id, application);
+    return ContractorSignUpOutcome.submitted;
   }
 
   @override

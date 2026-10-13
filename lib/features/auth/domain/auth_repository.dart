@@ -61,6 +61,45 @@ class UserProfile extends Equatable {
 
 enum AuthEvent { signedIn, signedOut, passwordRecovery }
 
+/// A municipality a contractor can apply to (public id + name only).
+class MunicipalityOption extends Equatable {
+  const MunicipalityOption({required this.id, required this.name});
+  final String id;
+  final String name;
+
+  @override
+  List<Object?> get props => [id, name];
+}
+
+/// Contractor self-registration details. Creates a *pending* row in
+/// `contractors`; the account stays a citizen until a municipal admin
+/// approves it through `verify_contractor`.
+class ContractorApplication extends Equatable {
+  const ContractorApplication({
+    required this.businessName,
+    required this.municipalityId,
+    this.municipalityName,
+    this.description,
+  });
+  final String businessName;
+  final String municipalityId;
+  final String? municipalityName;
+  final String? description;
+
+  @override
+  List<Object?> get props =>
+      [businessName, municipalityId, municipalityName, description];
+}
+
+enum ContractorSignUpOutcome {
+  /// Account created and the pending application stored on the server.
+  submitted,
+
+  /// Email confirmation is required first; the application is sent on the
+  /// first sign-in after confirming.
+  confirmEmailFirst,
+}
+
 /// Result of a sign-up: either signed in, or waiting for email confirmation.
 class SignUpResult {
   const SignUpResult({this.profile, this.needsEmailConfirmation = false});
@@ -80,6 +119,14 @@ abstract class AuthRepository {
 
   /// Public sign-up always creates a citizen account (database default).
   Future<SignUpResult> signUp(String name, String email, String password);
+
+  /// Municipalities open for contractor applications.
+  Future<List<MunicipalityOption>> listMunicipalities();
+
+  /// Creates a citizen account plus a pending contractor application. Never
+  /// grants contractor access — approval is a municipal decision.
+  Future<ContractorSignUpOutcome> signUpContractor(String name, String email,
+      String password, ContractorApplication application);
   Future<void> signOut();
   Future<void> sendPasswordReset(String email);
   Future<void> updatePassword(String newPassword);

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../features/auth/data/contractor_applications.dart';
 import '../../features/auth/data/local_session_repository.dart';
 import '../../features/auth/data/supabase_auth_repository.dart';
 import '../../features/auth/domain/auth_repository.dart';
@@ -111,7 +112,8 @@ class AppDependencies {
   }) {
     final db = SupabaseDbGateway(client);
     final media = SupabaseMediaStore(client);
-    final auth = SupabaseAuthRepository(client, db);
+    final auth = SupabaseAuthRepository(
+        client, db, ContractorApplications(db, preferences));
     final complaints = SupabaseComplaintRepository(db, media);
     final jobs = SupabaseJobRepository(db, media);
     final contractors = SupabaseContractorRepository(db);

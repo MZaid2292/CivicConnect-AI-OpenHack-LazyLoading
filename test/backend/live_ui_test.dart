@@ -82,6 +82,7 @@ void main() {
         prefs: {'onboarding_seen': true},
         initialLocation: '/complaint/CMP-1007');
     expect(find.text('Welcome back'), findsOneWidget);
+    await tapVisible(tester, find.text('Municipal Admin'));
     await signIn(tester, 'officer@example.com', 'correct-horse');
     expect(find.text('CMP-1007'), findsWidgets,
         reason: 'the requested complaint opens after sign-in');

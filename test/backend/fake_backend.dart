@@ -6,6 +6,7 @@ import 'package:civicconnect_ai/core/models/workflow_exception.dart';
 import 'package:civicconnect_ai/core/supabase/db_gateway.dart';
 import 'package:civicconnect_ai/core/supabase/media_store.dart';
 import 'package:civicconnect_ai/features/auth/domain/auth_repository.dart';
+import 'package:civicconnect_ai/features/jobs/domain/contractor.dart';
 import 'package:uuid/uuid.dart';
 
 const _uuid = Uuid();
@@ -164,6 +165,16 @@ class FakeAuthRepository implements AuthRepository {
   String? updatedPassword;
   bool confirmEmailOnSignUp = false;
 
+  List<MunicipalityOption> municipalities = const [
+    MunicipalityOption(id: 'muni-1', name: 'Karachi Metropolitan'),
+  ];
+
+  /// Server-side applications by email (mirrors `contractors`).
+  final applications = <String, ContractorApplication>{};
+
+  /// Kept "on device" until the email is confirmed (no password).
+  final pendingLocal = <String, ContractorApplication>{};
+
   void emit(AuthEvent e) => _events.add(e);
 
   @override
@@ -181,6 +192,12 @@ class FakeAuthRepository implements AuthRepository {
     if (account == null || account.$1 != password) {
       throw const WorkflowException('Incorrect email or password.');
     }
+    final local = pendingLocal.remove(email.trim());
+    if (local != null) {
+      _apply(email.trim(), local);
+      // Like the real repository: reload the profile after submitting.
+      return _current = persisted = accounts[email.trim()]!.$2;
+    }
     if (account.$2.role == null) {
       throw const WorkflowException('This account has no dashboard.');
     }
@@ -196,6 +213,63 @@ class FakeAuthRepository implements AuthRepository {
     final profile = citizenProfile(name: name, email: email);
     accounts[email] = (password, profile);
     return SignUpResult(profile: _current = persisted = profile);
+  }
+
+  @override
+  Future<List<MunicipalityOption>> listMunicipalities() async => municipalities;
+
+  @override
+  Future<ContractorSignUpOutcome> signUpContractor(String name, String email,
+      String password, ContractorApplication application) async {
+    accounts[email] = (password, citizenProfile(name: name, email: email));
+    if (confirmEmailOnSignUp) {
+      pendingLocal[email] = application;
+      return ContractorSignUpOutcome.confirmEmailFirst;
+    }
+    _apply(email, application);
+    return ContractorSignUpOutcome.submitted;
+  }
+
+  /// Creates the pending application (role stays citizen); duplicates are
+  /// ignored like the UNIQUE(owner_id) constraint.
+  void _apply(String email, ContractorApplication application) {
+    if (applications.containsKey(email)) return;
+    applications[email] = application;
+    final (password, p) = accounts[email]!;
+    accounts[email] = (
+      password,
+      UserProfile(
+        userId: p.userId,
+        email: p.email,
+        displayName: p.displayName,
+        dbRole: p.dbRole,
+        role: p.role,
+        municipalityId: p.municipalityId,
+        municipalityName: p.municipalityName,
+        contractorId: 'contractor-$email',
+        contractorStatus: ContractorStatus.pendingApproval,
+      ),
+    );
+  }
+
+  /// Simulates verify_contractor(approved|rejected) by a municipal admin.
+  void decide(String email, {required bool approve}) {
+    final (password, p) = accounts[email]!;
+    accounts[email] = (
+      password,
+      UserProfile(
+        userId: p.userId,
+        email: p.email,
+        displayName: p.displayName,
+        dbRole: approve ? 'contractor' : p.dbRole,
+        role: approve ? AppRole.contractor : p.role,
+        municipalityId: applications[email]?.municipalityId,
+        municipalityName: p.municipalityName,
+        contractorId: p.contractorId,
+        contractorStatus:
+            approve ? ContractorStatus.approved : ContractorStatus.rejected,
+      ),
+    );
   }
 
   @override

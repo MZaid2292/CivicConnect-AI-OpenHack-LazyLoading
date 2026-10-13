@@ -3,15 +3,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/backend_mode.dart';
+import '../../../../core/models/app_role.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/widgets/civic_widgets.dart';
+import '../../domain/auth_repository.dart';
+import '../../domain/login_role_check.dart';
 import '../cubit/session_cubit.dart';
+import 'role_selection_screen.dart';
 
-/// Sign-in / sign-up. Live backend: real Supabase Auth (sign-up always
-/// creates a citizen account; the role comes from the server). Local preview
-/// build: validates input and leads to the demo role selector.
+/// Sign-in / sign-up. Live backend: real Supabase Auth with a Citizen /
+/// Municipal Admin / Contractor selector that only picks the flow — the
+/// dashboard is decided by the trusted database role, and a mismatch is
+/// refused. Contractors apply through sign-up (pending until a municipal admin
+/// approves); admins cannot sign up. Local preview build: validates input and
+/// leads to the demo role selector.
 class DemoLoginScreen extends StatefulWidget {
   const DemoLoginScreen({super.key});
 
@@ -24,16 +31,91 @@ class _DemoLoginScreenState extends State<DemoLoginScreen> {
   final _name = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
+  final _business = TextEditingController();
+  final _description = TextEditingController();
   bool _signUp = false;
   bool _obscure = true;
   bool _busy = false;
+
+  /// Live only: which sign-in flow to use (never a permission).
+  AppRole _role = AppRole.citizen;
+  List<MunicipalityOption>? _municipalities;
+  String? _municipalityId;
+  String? _municipalityError;
+
+  /// Pending-approval / confirmation notice shown with the existing banner.
+  (String, String)? _notice;
+
+  bool get _contractorSignUp =>
+      context.isLiveBackend && _signUp && _role == AppRole.contractor;
 
   @override
   void dispose() {
     _name.dispose();
     _email.dispose();
     _password.dispose();
+    _business.dispose();
+    _description.dispose();
     super.dispose();
+  }
+
+  void _selectRole(AppRole role) => setState(() {
+        _role = role;
+        _notice = null;
+        // Municipal accounts are provisioned by the municipality.
+        if (role == AppRole.municipalAdmin) _signUp = false;
+        if (_contractorSignUp) _loadMunicipalities();
+      });
+
+  Future<void> _loadMunicipalities() async {
+    if (_municipalities != null) return;
+    final session = context.read<SessionCubit>();
+    try {
+      final list = await session.listMunicipalities();
+      if (mounted) {
+        setState(() {
+          _municipalities = list;
+          _municipalityError = list.isEmpty
+              ? 'No municipalities are accepting applications yet.'
+              : null;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _municipalityError = e.toString());
+    }
+  }
+
+  Future<void> _submitContractorApplication(SessionCubit session) async {
+    final municipality =
+        _municipalities!.firstWhere((m) => m.id == _municipalityId);
+    final outcome = await session.signUpContractor(
+      _name.text,
+      _email.text,
+      _password.text,
+      ContractorApplication(
+        businessName: _business.text,
+        municipalityId: municipality.id,
+        municipalityName: municipality.name,
+        description: _description.text,
+      ),
+    );
+    if (!mounted) return;
+    setState(() {
+      _signUp = false;
+      _notice = switch (outcome) {
+        ContractorSignUpOutcome.submitted => (
+            'Application submitted',
+            '${municipality.name} will review your application. Sign in as '
+                'Contractor once it is approved.'
+          ),
+        ContractorSignUpOutcome.confirmEmailFirst => (
+            'Confirm your email',
+            'We sent a link to ${_email.text.trim()}. After confirming, sign '
+                'in here as Contractor to send your application to '
+                '${municipality.name}.'
+          ),
+      };
+    });
   }
 
   Future<void> _submit() async {
@@ -47,7 +129,9 @@ class _DemoLoginScreenState extends State<DemoLoginScreen> {
     final session = context.read<SessionCubit>();
     setState(() => _busy = true);
     try {
-      if (_signUp) {
+      if (_contractorSignUp) {
+        await _submitContractorApplication(session);
+      } else if (_signUp) {
         final signedIn =
             await session.signUp(_name.text, _email.text, _password.text);
         if (!signedIn && mounted) {
@@ -56,9 +140,16 @@ class _DemoLoginScreenState extends State<DemoLoginScreen> {
           setState(() => _signUp = false);
         }
       } else {
-        await session.signIn(_email.text, _password.text);
+        await session.signIn(_email.text, _password.text, as: _role);
       }
       // On success the router moves to the dashboard.
+    } on RoleAccessException catch (e) {
+      if (!mounted) return;
+      if (e.pendingApproval) {
+        setState(() => _notice = ('Application pending', e.message));
+      } else {
+        showMessage(context, e.message, error: true);
+      }
     } catch (e) {
       if (mounted) showMessage(context, e.toString(), error: true);
     } finally {
@@ -86,6 +177,59 @@ class _DemoLoginScreenState extends State<DemoLoginScreen> {
     }
   }
 
+  /// Contractor application fields, styled like the existing inputs.
+  List<Widget> _contractorFields(BuildContext context) => [
+        Padding(
+          padding: const EdgeInsets.only(bottom: Space.md),
+          child: TextFormField(
+            key: const Key('businessNameField'),
+            controller: _business,
+            textInputAction: TextInputAction.next,
+            decoration: const InputDecoration(
+                labelText: 'Business / company name',
+                prefixIcon: Icon(Icons.business_outlined)),
+            validator: (v) =>
+                (v ?? '').trim().length < 2 ? 'Enter your business name' : null,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: Space.md),
+          child: DropdownButtonFormField<String>(
+            key: const Key('municipalityField'),
+            initialValue: _municipalityId,
+            isExpanded: true,
+            decoration: InputDecoration(
+              labelText: 'Municipality',
+              prefixIcon: const Icon(Icons.location_city_outlined),
+              helperText: _municipalities == null && _municipalityError == null
+                  ? 'Loading municipalities…'
+                  : null,
+              errorText: _municipalityError,
+            ),
+            items: [
+              for (final m in _municipalities ?? const <MunicipalityOption>[])
+                DropdownMenuItem(
+                    value: m.id,
+                    child: Text(m.name, overflow: TextOverflow.ellipsis)),
+            ],
+            onChanged: (v) => setState(() => _municipalityId = v),
+            validator: (v) => v == null ? 'Choose your municipality' : null,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: Space.md),
+          child: TextFormField(
+            controller: _description,
+            minLines: 1,
+            maxLines: 3,
+            maxLength: 500,
+            decoration: const InputDecoration(
+                labelText: 'Business description (optional)',
+                prefixIcon: Icon(Icons.notes_outlined)),
+          ),
+        ),
+      ];
+
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(),
@@ -112,40 +256,68 @@ class _DemoLoginScreenState extends State<DemoLoginScreen> {
                           style: context.textStyles.bodyLarge
                               ?.copyWith(color: context.civic.muted)),
                       Space.gapLg,
-                      SegmentedButton<bool>(
-                        segments: const [
-                          ButtonSegment(
-                              value: false,
-                              icon: Icon(Icons.login),
-                              label: Text('Sign in')),
-                          ButtonSegment(
-                              value: true,
-                              icon: Icon(Icons.person_add_alt),
-                              label: Text('Sign up')),
-                        ],
-                        selected: {_signUp},
-                        onSelectionChanged: (s) =>
-                            setState(() => _signUp = s.first),
-                      ),
-                      Space.gapLg,
+                      if (_notice != null) ...[
+                        InfoBanner(
+                            icon: Icons.hourglass_top,
+                            color: AppColors.amber,
+                            title: _notice!.$1,
+                            message: _notice!.$2),
+                        Space.gapLg,
+                      ],
+                      if (context.isLiveBackend) ...[
+                        _RoleSelector(selected: _role, onSelected: _selectRole),
+                        Space.gapMd,
+                      ],
+                      if (!context.isLiveBackend ||
+                          _role != AppRole.municipalAdmin) ...[
+                        SegmentedButton<bool>(
+                          segments: const [
+                            ButtonSegment(
+                                value: false,
+                                icon: Icon(Icons.login),
+                                label: Text('Sign in')),
+                            ButtonSegment(
+                                value: true,
+                                icon: Icon(Icons.person_add_alt),
+                                label: Text('Sign up')),
+                          ],
+                          selected: {_signUp},
+                          onSelectionChanged: (s) => setState(() {
+                            _signUp = s.first;
+                            _notice = null;
+                            if (_contractorSignUp) _loadMunicipalities();
+                          }),
+                        ),
+                        Space.gapLg,
+                      ] else
+                        Space.gapSm,
                       AnimatedSize(
                         duration: Motion.of(context, Motion.medium),
                         curve: Motion.curve,
                         child: _signUp
-                            ? Padding(
-                                padding:
-                                    const EdgeInsets.only(bottom: Space.md),
-                                child: TextFormField(
-                                  controller: _name,
-                                  textInputAction: TextInputAction.next,
-                                  autofillHints: const [AutofillHints.name],
-                                  decoration: const InputDecoration(
-                                      labelText: 'Full name',
-                                      prefixIcon: Icon(Icons.person_outline)),
-                                  validator: (v) => (v ?? '').trim().length < 2
-                                      ? 'Enter your name'
-                                      : null,
-                                ),
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.only(bottom: Space.md),
+                                    child: TextFormField(
+                                      controller: _name,
+                                      textInputAction: TextInputAction.next,
+                                      autofillHints: const [AutofillHints.name],
+                                      decoration: const InputDecoration(
+                                          labelText: 'Full name',
+                                          prefixIcon:
+                                              Icon(Icons.person_outline)),
+                                      validator: (v) =>
+                                          (v ?? '').trim().length < 2
+                                              ? 'Enter your name'
+                                              : null,
+                                    ),
+                                  ),
+                                  if (_contractorSignUp)
+                                    ..._contractorFields(context),
+                                ],
                               )
                             : const SizedBox(width: double.infinity),
                       ),
@@ -192,7 +364,9 @@ class _DemoLoginScreenState extends State<DemoLoginScreen> {
                         loading: _busy,
                         icon: Icons.arrow_forward,
                         label: context.isLiveBackend
-                            ? (_signUp ? 'Create account' : 'Sign in')
+                            ? (_contractorSignUp
+                                ? 'Submit application'
+                                : (_signUp ? 'Create account' : 'Sign in'))
                             : (_signUp
                                 ? 'Continue (demo sign-up)'
                                 : 'Continue (demo sign-in)'),
@@ -218,4 +392,39 @@ class _DemoLoginScreenState extends State<DemoLoginScreen> {
           ),
         ),
       );
+}
+
+/// Compact Citizen / Municipal Admin / Contractor choice for the sign-in
+/// flow, in the same SegmentedButton style as the Sign in / Sign up toggle.
+/// Icons are dropped on narrow screens or with large text so labels fit.
+class _RoleSelector extends StatelessWidget {
+  const _RoleSelector({required this.selected, required this.onSelected});
+  final AppRole selected;
+  final ValueChanged<AppRole> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 400 ||
+        MediaQuery.textScalerOf(context).scale(1) > 1.3;
+    return Semantics(
+      label: 'Sign in as',
+      container: true,
+      child: SegmentedButton<AppRole>(
+        showSelectedIcon: false,
+        segments: [
+          for (final role in AppRole.values)
+            ButtonSegment(
+              value: role,
+              icon: compact ? null : Icon(RoleSelectionScreen.iconFor(role)),
+              label: Text(role.label,
+                  maxLines: 2,
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis),
+            ),
+        ],
+        selected: {selected},
+        onSelectionChanged: (s) => onSelected(s.first),
+      ),
+    );
+  }
 }

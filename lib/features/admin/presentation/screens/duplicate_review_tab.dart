@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/backend_mode.dart';
 import '../../../../core/presentation/watch_cubit.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -157,27 +158,43 @@ class _ScoringMethodCard extends StatelessWidget {
   const _ScoringMethodCard();
 
   @override
-  Widget build(BuildContext context) => const SmartInsightCard(
+  Widget build(BuildContext context) {
+    if (context.isLiveBackend) {
+      // Live scores come from the database duplicate check, whose weights
+      // are not the app's local formula — don't state numbers we can't vouch
+      // for.
+      return const SmartInsightCard(
         icon: Icons.rule_outlined,
         title: 'How matches are scored',
         color: AppColors.indigo,
-        footnote: 'Without GPS on either report: 35% category + 65% wording, '
-            'labelled text-only. Nothing is merged automatically.',
-        child: Column(children: [
-          _WeightRow(
-              icon: Icons.near_me_outlined,
-              label: 'Proximity (Haversine, ≤300 m)',
-              weight: 0.45),
-          _WeightRow(
-              icon: Icons.category_outlined,
-              label: 'Same category',
-              weight: 0.25),
-          _WeightRow(
-              icon: Icons.short_text,
-              label: 'Wording overlap (Jaccard)',
-              weight: 0.30),
-        ]),
+        footnote: 'Nothing is merged automatically.',
+        child: Text("Scores come from the server's duplicate check, which "
+            'compares location, category and wording when a report is '
+            'submitted.'),
       );
+    }
+    return const SmartInsightCard(
+      icon: Icons.rule_outlined,
+      title: 'How matches are scored',
+      color: AppColors.indigo,
+      footnote: 'Without GPS on either report: 35% category + 65% wording, '
+          'labelled text-only. Nothing is merged automatically.',
+      child: Column(children: [
+        _WeightRow(
+            icon: Icons.near_me_outlined,
+            label: 'Proximity (Haversine, ≤300 m)',
+            weight: 0.45),
+        _WeightRow(
+            icon: Icons.category_outlined,
+            label: 'Same category',
+            weight: 0.25),
+        _WeightRow(
+            icon: Icons.short_text,
+            label: 'Wording overlap (Jaccard)',
+            weight: 0.30),
+      ]),
+    );
+  }
 }
 
 class _WeightRow extends StatelessWidget {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/backend_mode.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/tokens.dart';
@@ -262,16 +263,20 @@ class _Features extends StatelessWidget {
               if (context.mounted) context.go(Routes.login);
             },
           ),
-          Space.gapSm,
-          CivicButton(
-            label: 'Skip to demo role selector',
-            variant: CivicButtonVariant.outlined,
-            expand: true,
-            onPressed: () async {
-              await context.read<SessionCubit>().completeOnboarding();
-              if (context.mounted) context.go(Routes.role);
-            },
-          ),
+          // The role selector exists only in the local preview build; real
+          // accounts get their role from the server.
+          if (!context.isLiveBackend) ...[
+            Space.gapSm,
+            CivicButton(
+              label: 'Skip to demo role selector',
+              variant: CivicButtonVariant.outlined,
+              expand: true,
+              onPressed: () async {
+                await context.read<SessionCubit>().completeOnboarding();
+                if (context.mounted) context.go(Routes.role);
+              },
+            ),
+          ],
         ],
       );
 }

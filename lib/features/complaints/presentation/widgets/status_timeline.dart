@@ -16,6 +16,7 @@ class StatusTracker extends StatelessWidget {
 
   int get _reached => switch (status) {
         ComplaintStatus.reworkRequired => 3,
+        ComplaintStatus.underReview => 0,
         ComplaintStatus.rejected || ComplaintStatus.duplicate => 0,
         ComplaintStatus.draft => -1,
         _ => ComplaintWorkflow.happyPath.indexOf(status),

@@ -10,6 +10,7 @@ extension ComplaintStatusStyle on ComplaintStatus {
   Color get color => switch (this) {
         ComplaintStatus.draft => AppColors.slate,
         ComplaintStatus.submitted => AppColors.cyan,
+        ComplaintStatus.underReview => AppColors.cyan,
         ComplaintStatus.verified => AppColors.royal,
         ComplaintStatus.assigned => AppColors.indigo,
         ComplaintStatus.inProgress => AppColors.amber,
@@ -23,6 +24,7 @@ extension ComplaintStatusStyle on ComplaintStatus {
   IconData get icon => switch (this) {
         ComplaintStatus.draft => Icons.edit_note,
         ComplaintStatus.submitted => Icons.outbox_outlined,
+        ComplaintStatus.underReview => Icons.manage_search,
         ComplaintStatus.verified => Icons.verified_outlined,
         ComplaintStatus.assigned => Icons.assignment_ind_outlined,
         ComplaintStatus.inProgress => Icons.construction,

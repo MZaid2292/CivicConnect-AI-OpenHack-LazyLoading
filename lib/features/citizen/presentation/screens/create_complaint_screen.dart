@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/backend_mode.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/services/location_service.dart';
@@ -71,7 +72,10 @@ class _CreateComplaintViewState extends State<_CreateComplaintView> {
     }
     switch (state.outcome) {
       case CreateOutcome.submitted:
-        showMessage(context, '${state.outcomeId} submitted. Thank you!');
+        // A partial photo-upload warning (state.error) is already showing.
+        if (state.error == null) {
+          showMessage(context, '${state.outcomeId} submitted. Thank you!');
+        }
         context.pushReplacement(Routes.complaint(state.outcomeId!));
       case CreateOutcome.supportedExisting:
         showMessage(context,
@@ -192,7 +196,9 @@ class _CreateComplaintViewState extends State<_CreateComplaintView> {
           return Scaffold(
             appBar: CivicAppBar(
               title: widget.isEdit ? 'Edit draft' : 'Report an issue',
-              subtitle: 'Ward 4 · takes about a minute',
+              subtitle: context.isLiveBackend
+                  ? '${context.read<SessionCubit>().state.profile?.municipalityName ?? 'Your municipality'} · takes about a minute'
+                  : 'Ward 4 · takes about a minute',
               fallbackLocation: Routes.home,
               actions: [
                 CivicAppBarAction(

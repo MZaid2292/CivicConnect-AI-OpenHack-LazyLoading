@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/backend_mode.dart';
 import '../../../../core/presentation/watch_cubit.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -102,9 +103,12 @@ class _InspectionBody extends StatelessWidget {
               subtitle: 'Check the after photos against the original report'),
           BeforeAfter(job: job),
           Space.gapLg,
-          const InfoBanner(
-              message: 'Accepting resolves the report for the citizen and '
-                  'marks the simulated payment as released.'),
+          InfoBanner(
+              message: context.isLiveBackend
+                  ? 'Accepting resolves the report for the citizen. The '
+                      'simulated payment is then handled by finance.'
+                  : 'Accepting resolves the report for the citizen and '
+                      'marks the simulated payment as released.'),
           Space.gapLg,
           if (!ready)
             InfoBanner(

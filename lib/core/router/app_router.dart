@@ -52,6 +52,32 @@ String? sessionRedirect(SessionState session, Uri uri) {
         : Routes.loading;
   }
   final role = session.role;
+  if (session.live) {
+    // Real accounts: the demo role selector is never reachable, and a deep
+    // link survives sign-in via `?from=`.
+    if (role == null) {
+      if (location == Routes.role) return Routes.login;
+      if (location == Routes.welcome) {
+        return session.onboardingSeen ? Routes.login : null;
+      }
+      if (location == Routes.login) return null;
+      final keep = location != '/' && location != Routes.loading;
+      final from = location == Routes.loading
+          ? uri.queryParameters['from']
+          : (keep ? uri.toString() : null);
+      if (!session.onboardingSeen && from == null) return Routes.welcome;
+      return from == null
+          ? Routes.login
+          : Uri(path: Routes.login, queryParameters: {'from': from}).toString();
+    }
+    if (location == Routes.login) {
+      final from = uri.queryParameters['from'];
+      if (from != null && from.startsWith('/')) {
+        return sessionRedirect(session, Uri.parse(from)) ?? from;
+      }
+      return Routes.home;
+    }
+  }
   if (role == null) {
     if (_authRoutes.contains(location)) return null;
     return session.onboardingSeen ? Routes.role : Routes.welcome;

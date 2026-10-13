@@ -35,6 +35,13 @@ class ComplaintInput {
   final List<MediaAttachment> photos;
 }
 
+/// Thrown when a report was created but some photos could not be uploaded,
+/// so the UI never claims a complete upload.
+class PartialSubmitException extends WorkflowException {
+  const PartialSubmitException(this.complaint, super.message);
+  final Complaint complaint;
+}
+
 /// Field-level validation shared by the form view model and the service.
 class ComplaintValidator {
   const ComplaintValidator._();
@@ -319,6 +326,7 @@ class ComplaintService {
     final result = <Complaint, List<DuplicateCandidate>>{};
     for (final c in all.where((c) =>
         (c.status == ComplaintStatus.submitted ||
+            c.status == ComplaintStatus.underReview ||
             c.status == ComplaintStatus.verified) &&
         !c.duplicateReviewCleared)) {
       final matches = duplicateDetector

@@ -39,6 +39,10 @@ extension ComplaintCategoryInfo on ComplaintCategory {
 enum ComplaintStatus {
   draft,
   submitted,
+
+  /// Municipality is reviewing before verifying (database stage
+  /// `under_review`). Shares the "Submitted" step in the progress tracker.
+  underReview,
   verified,
   assigned,
   inProgress,
@@ -53,6 +57,7 @@ extension ComplaintStatusInfo on ComplaintStatus {
   String get label => switch (this) {
         ComplaintStatus.draft => 'Draft',
         ComplaintStatus.submitted => 'Submitted',
+        ComplaintStatus.underReview => 'Under review',
         ComplaintStatus.verified => 'Verified',
         ComplaintStatus.assigned => 'Assigned',
         ComplaintStatus.inProgress => 'In progress',
@@ -73,7 +78,15 @@ extension ComplaintStatusInfo on ComplaintStatus {
   bool get isPublic => this != ComplaintStatus.draft;
 }
 
-enum LocationSource { gps, manualPin, defaultArea, none }
+enum LocationSource {
+  gps,
+  manualPin,
+  defaultArea,
+  none,
+
+  /// Coordinates stored by the backend; how they were captured isn't stored.
+  recorded,
+}
 
 extension LocationSourceInfo on LocationSource {
   String get label => switch (this) {
@@ -81,6 +94,7 @@ extension LocationSourceInfo on LocationSource {
         LocationSource.manualPin => 'Pinned on map',
         LocationSource.defaultArea => 'Ward centre (approximate)',
         LocationSource.none => 'Address only',
+        LocationSource.recorded => 'Recorded location',
       };
 }
 

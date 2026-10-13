@@ -377,6 +377,14 @@ class CreateComplaintCubit extends Cubit<CreateComplaintState> {
           outcome: CreateOutcome.submitted,
           outcomeId: created.id));
       return true;
+    } on PartialSubmitException catch (e) {
+      // The report exists; say exactly which photos did not upload.
+      emit(state.copyWith(
+          busy: false,
+          error: e.message,
+          outcome: CreateOutcome.submitted,
+          outcomeId: e.complaint.id));
+      return true;
     } catch (e) {
       emit(state.copyWith(busy: false, error: e.toString()));
       return false;

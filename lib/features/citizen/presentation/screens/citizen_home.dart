@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/backend_mode.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/models/app_role.dart';
 import '../../../../core/router/app_router.dart';
@@ -86,7 +87,10 @@ class _CitizenHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final actor = context.read<SessionCubit>().state.actor!;
-    final city = context.read<AppConfig>().cityName;
+    final session = context.read<SessionCubit>().state;
+    final city = session.live
+        ? (session.profile?.municipalityName ?? 'Your municipality')
+        : 'Ward 4 · ${context.read<AppConfig>().cityName}';
     final mine = state.all.where((c) => c.reporterId == actor.id);
     final open = mine.where((c) => c.status.isOpen).length;
     final resolved =
@@ -103,7 +107,7 @@ class _CitizenHeader extends StatelessWidget {
                 size: 16, color: Colors.white.withValues(alpha: 0.8)),
             const SizedBox(width: 4),
             Flexible(
-              child: Text('Ward 4 · $city',
+              child: Text(city,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: context.textStyles.labelMedium
@@ -244,6 +248,7 @@ class MyReportsTab extends StatelessWidget {
           StatusPreset('Drafts', {ComplaintStatus.draft}),
           StatusPreset('Active', {
             ComplaintStatus.submitted,
+            ComplaintStatus.underReview,
             ComplaintStatus.verified,
             ComplaintStatus.assigned,
             ComplaintStatus.inProgress,
@@ -298,14 +303,28 @@ class CitizenProfileTab extends StatelessWidget {
                               children: [
                                 Text(actor.name,
                                     style: context.textStyles.titleLarge),
-                                Text('Citizen · Ward 4',
+                                Text(
+                                    context.isLiveBackend
+                                        ? 'Citizen · ${context.read<SessionCubit>().state.profile?.municipalityName ?? 'No municipality linked'}'
+                                        : 'Citizen · Ward 4',
                                     style: context.textStyles.bodyMedium
                                         ?.copyWith(color: context.civic.muted)),
                                 Space.gapSm,
-                                const Pill(
-                                    label: 'Demo profile',
-                                    color: AppColors.amber,
-                                    icon: Icons.science_outlined),
+                                if (context.isLiveBackend)
+                                  Pill(
+                                      label: context
+                                              .read<SessionCubit>()
+                                              .state
+                                              .profile
+                                              ?.email ??
+                                          '',
+                                      color: AppColors.civicBlue,
+                                      icon: Icons.mail_outline)
+                                else
+                                  const Pill(
+                                      label: 'Demo profile',
+                                      color: AppColors.amber,
+                                      icon: Icons.science_outlined),
                               ]),
                         ),
                       ]),
@@ -358,10 +377,14 @@ class CitizenProfileTab extends StatelessWidget {
                         ListTile(
                           leading:
                               Icon(Icons.logout, color: context.colors.error),
-                          title: Text('Switch role / log out',
+                          title: Text(
+                              context.isLiveBackend
+                                  ? 'Log out'
+                                  : 'Switch role / log out',
                               style: TextStyle(color: context.colors.error)),
-                          subtitle: const Text(
-                              'Clears the saved demo role on this device'),
+                          subtitle: Text(context.isLiveBackend
+                              ? 'Signs you out on this device'
+                              : 'Clears the saved demo role on this device'),
                           onTap: () => context.read<SessionCubit>().logout(),
                         ),
                       ]),

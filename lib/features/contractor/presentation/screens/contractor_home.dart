@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/backend_mode.dart';
 import '../../../../core/models/app_role.dart';
 import '../../../../core/presentation/watch_cubit.dart';
 import '../../../../core/router/app_router.dart';
@@ -477,10 +478,12 @@ class _ContractorProfile extends StatelessWidget {
   Widget build(BuildContext context) => _JobsScope(
         builder: (context, jobs, profile, me) {
           if (profile == null) {
-            return const CivicEmptyState(
+            return CivicEmptyState(
                 icon: Icons.person_off_outlined,
                 title: 'Profile not found',
-                message: 'This demo contractor is not registered.');
+                message: context.isLiveBackend
+                    ? 'No contractor profile is linked to this account.'
+                    : 'This demo contractor is not registered.');
           }
           final dark = context.civic.isDark;
           return SingleChildScrollView(
@@ -506,7 +509,9 @@ class _ContractorProfile extends StatelessWidget {
                                       Text(profile.name,
                                           style: context.textStyles.titleLarge),
                                       Text(
-                                          'Reg. ${profile.registrationNo} (mock)',
+                                          context.isLiveBackend
+                                              ? 'ID ${profile.registrationNo}'
+                                              : 'Reg. ${profile.registrationNo} (mock)',
                                           style: context.textStyles.bodySmall
                                               ?.copyWith(
                                                   color: context.civic.muted)),
@@ -585,7 +590,10 @@ class _ContractorProfile extends StatelessWidget {
                         ListTile(
                           leading:
                               Icon(Icons.logout, color: context.colors.error),
-                          title: Text('Switch role / log out',
+                          title: Text(
+                              context.isLiveBackend
+                                  ? 'Log out'
+                                  : 'Switch role / log out',
                               style: TextStyle(color: context.colors.error)),
                           onTap: () => context.read<SessionCubit>().logout(),
                         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../backend_mode.dart';
 import '../models/media_attachment.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
@@ -74,12 +75,22 @@ class MediaImage extends StatelessWidget {
   final MediaAttachment media;
 
   @override
-  Widget build(BuildContext context) => media.bytes != null
-      ? Image.memory(media.bytes!,
+  Widget build(BuildContext context) {
+    if (media.bytes != null) {
+      return Image.memory(media.bytes!,
           fit: BoxFit.cover,
           gaplessPlayback: true,
-          errorBuilder: (_, __, ___) => _Illustration(media: media))
-      : _Illustration(media: media);
+          errorBuilder: (_, __, ___) => _Illustration(media: media));
+    }
+    // Private storage photo via a short-lived signed URL.
+    if (media.remoteUrl != null) {
+      return Image.network(media.remoteUrl!,
+          fit: BoxFit.cover,
+          gaplessPlayback: true,
+          errorBuilder: (_, __, ___) => _Illustration(media: media));
+    }
+    return _Illustration(media: media);
+  }
 }
 
 class StorageTag extends StatelessWidget {
@@ -320,7 +331,10 @@ class CivicImagePickerCard extends StatelessWidget {
                   style: context.textStyles.bodySmall
                       ?.copyWith(color: civic.muted)),
               Space.gapXs,
-              Text('Up to $maxPhotos · stays on this device (demo)',
+              Text(
+                  context.isLiveBackend
+                      ? 'Up to $maxPhotos · uploaded privately when you submit'
+                      : 'Up to $maxPhotos · stays on this device (demo)',
                   textAlign: TextAlign.center,
                   style: context.textStyles.labelSmall
                       ?.copyWith(color: civic.subtle)),
@@ -391,8 +405,11 @@ Future<bool?> askCameraOrGallery(BuildContext context,
             padding: const EdgeInsets.fromLTRB(
                 Space.lg, Space.xs, Space.lg, Space.lg),
             child: Text(
-              'Demo: photos stay in this device\'s memory only and are not '
-              'uploaded. They disappear when the app restarts.',
+              context.isLiveBackend
+                  ? 'Photos are uploaded to private storage when you submit '
+                      'and are visible only to signed-in users.'
+                  : 'Demo: photos stay in this device\'s memory only and are '
+                      'not uploaded. They disappear when the app restarts.',
               style: context.textStyles.bodySmall
                   ?.copyWith(color: context.civic.muted),
             ),

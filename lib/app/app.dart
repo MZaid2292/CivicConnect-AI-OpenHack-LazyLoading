@@ -38,6 +38,7 @@ class _CivicConnectAppState extends State<CivicConnectApp> {
       providers: [
         RepositoryProvider.value(value: d),
         RepositoryProvider.value(value: d.config),
+        RepositoryProvider.value(value: d.mode),
         RepositoryProvider.value(value: d.complaintRepository),
         RepositoryProvider.value(value: d.jobRepository),
         RepositoryProvider.value(value: d.contractorRepository),

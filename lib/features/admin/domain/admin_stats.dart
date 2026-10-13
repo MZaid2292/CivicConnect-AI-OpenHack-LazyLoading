@@ -13,7 +13,9 @@ class AdminStats {
   }) {
     final public = complaints.where((c) => c.status.isPublic).toList();
     awaitingVerification = public
-        .where((c) => c.status == ComplaintStatus.submitted)
+        .where((c) =>
+            c.status == ComplaintStatus.submitted ||
+            c.status == ComplaintStatus.underReview)
         .toList()
       ..sort((a, b) => b.priority.score.compareTo(a.priority.score));
     open = public.where((c) => c.status.isOpen).length;

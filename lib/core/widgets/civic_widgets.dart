@@ -759,6 +759,7 @@ Future<String?> promptForText(
   String? hint,
   String initial = '',
   int minLength = 0,
+  bool obscure = false,
 }) {
   final controller = TextEditingController(text: initial);
   final formKey = GlobalKey<FormState>();
@@ -773,7 +774,8 @@ Future<String?> promptForText(
           child: TextFormField(
             controller: controller,
             autofocus: true,
-            maxLines: 3,
+            maxLines: obscure ? 1 : 3,
+            obscureText: obscure,
             decoration: InputDecoration(labelText: label, hintText: hint),
             validator: (v) => (v ?? '').trim().length < minLength
                 ? 'Please enter at least $minLength characters.'
@@ -788,7 +790,8 @@ Future<String?> promptForText(
         FilledButton(
           onPressed: () {
             if (formKey.currentState!.validate()) {
-              Navigator.pop(context, controller.text.trim());
+              Navigator.pop(
+                  context, obscure ? controller.text : controller.text.trim());
             }
           },
           child: Text(confirmLabel),

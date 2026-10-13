@@ -37,6 +37,13 @@ class JobService {
 
   DateTime get _now => _clock();
 
+  /// Whether accepting an inspection also releases the simulated payment
+  /// (local workflow). On the server, finance does that separately.
+  bool get inspectionReleasesPayment => true;
+
+  /// Whether bids are local mock records rather than server records.
+  bool get bidsAreMock => true;
+
   // ---- Admin ---------------------------------------------------------------
 
   Future<WorkJob> openTender(Actor actor, String complaintId,

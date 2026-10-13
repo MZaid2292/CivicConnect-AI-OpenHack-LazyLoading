@@ -437,9 +437,10 @@ class _ActionPanel extends StatelessWidget {
         }
       case AppRole.municipalAdmin:
         title = 'Review & assignment';
-        if (c.status == ComplaintStatus.submitted ||
-            c.status == ComplaintStatus.verified) {
-          if (c.status == ComplaintStatus.submitted) {
+        final intake = c.status == ComplaintStatus.submitted ||
+            c.status == ComplaintStatus.underReview;
+        if (intake || c.status == ComplaintStatus.verified) {
+          if (intake) {
             children.add(FilledButton.icon(
               key: const Key('verifyButton'),
               onPressed: busy

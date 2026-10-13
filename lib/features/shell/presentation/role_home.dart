@@ -19,15 +19,68 @@ class RoleHome extends StatelessWidget {
     final actor = context.select((SessionCubit c) => c.state.actor);
     if (actor == null) return const Scaffold(body: CivicLoadingState());
     final notifications = context.read<NotificationRepository>();
-    return BlocProvider(
-      key: ValueKey(actor.id),
-      create: (_) => WatchCubit<List<AppNotification>>(
-          () => notifications.watchFor(actor.id)),
-      child: switch (actor.role) {
-        AppRole.citizen => const CitizenHome(),
-        AppRole.municipalAdmin => const AdminHome(),
-        AppRole.contractor => const ContractorHome(),
-      },
+    return _PasswordRecoveryPrompt(
+      child: BlocProvider(
+        key: ValueKey(actor.id),
+        create: (_) => WatchCubit<List<AppNotification>>(
+            () => notifications.watchFor(actor.id)),
+        child: switch (actor.role) {
+          AppRole.citizen => const CitizenHome(),
+          AppRole.municipalAdmin => const AdminHome(),
+          AppRole.contractor => const ContractorHome(),
+        },
+      ),
     );
   }
+}
+
+/// Opened from a password-reset email (live accounts): asks for the new
+/// password, whether the link was handled before or after this screen built.
+class _PasswordRecoveryPrompt extends StatefulWidget {
+  const _PasswordRecoveryPrompt({required this.child});
+  final Widget child;
+
+  @override
+  State<_PasswordRecoveryPrompt> createState() =>
+      _PasswordRecoveryPromptState();
+}
+
+class _PasswordRecoveryPromptState extends State<_PasswordRecoveryPrompt> {
+  bool _prompting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (context.read<SessionCubit>().state.recoveringPassword) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _prompt());
+    }
+  }
+
+  Future<void> _prompt() async {
+    if (_prompting || !mounted) return;
+    _prompting = true;
+    final session = context.read<SessionCubit>();
+    final password = await promptForText(context,
+        title: 'Choose a new password',
+        label: 'New password',
+        confirmLabel: 'Save password',
+        minLength: 8,
+        obscure: true);
+    _prompting = false;
+    if (password == null || !mounted) return;
+    try {
+      await session.updatePassword(password);
+      if (mounted) showMessage(context, 'Password updated.');
+    } catch (e) {
+      if (mounted) showMessage(context, e.toString(), error: true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      BlocListener<SessionCubit, SessionState>(
+        listenWhen: (a, b) => !a.recoveringPassword && b.recoveringPassword,
+        listener: (_, __) => _prompt(),
+        child: widget.child,
+      );
 }

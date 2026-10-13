@@ -23,6 +23,7 @@ class StatusPreset {
     StatusPreset('All', {}),
     StatusPreset('Open', {
       ComplaintStatus.submitted,
+      ComplaintStatus.underReview,
       ComplaintStatus.verified,
       ComplaintStatus.assigned,
     }),

@@ -17,6 +17,12 @@ class ComplaintWorkflow {
       transitions = {
     ComplaintStatus.draft: {ComplaintStatus.submitted: _citizen},
     ComplaintStatus.submitted: {
+      ComplaintStatus.underReview: _admin,
+      ComplaintStatus.verified: _admin,
+      ComplaintStatus.rejected: _admin,
+      ComplaintStatus.duplicate: _admin,
+    },
+    ComplaintStatus.underReview: {
       ComplaintStatus.verified: _admin,
       ComplaintStatus.rejected: _admin,
       ComplaintStatus.duplicate: _admin,

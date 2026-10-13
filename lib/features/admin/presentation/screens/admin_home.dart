@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/backend_mode.dart';
 import '../../../../core/models/app_role.dart';
 import '../../../../core/presentation/watch_cubit.dart';
 import '../../../../core/router/app_router.dart';
@@ -226,7 +227,10 @@ class AdminOverviewTab extends StatelessWidget {
                   style: context.textStyles.labelMedium
                       ?.copyWith(color: Colors.white.withValues(alpha: 0.75))),
               Space.gapXs,
-              Text('Ward 4 operations',
+              Text(
+                  context.isLiveBackend
+                      ? '${context.read<SessionCubit>().state.profile?.municipalityName ?? 'Municipal'} operations'
+                      : 'Ward 4 operations',
                   style: context.textStyles.headlineSmall
                       ?.copyWith(color: Colors.white)),
               Space.gapXs,
@@ -344,7 +348,11 @@ class _StatusDistribution extends StatelessWidget {
       (
         'New',
         AppColors.cyan,
-        public.where((c) => c.status == ComplaintStatus.submitted).length
+        public
+            .where((c) =>
+                c.status == ComplaintStatus.submitted ||
+                c.status == ComplaintStatus.underReview)
+            .length
       ),
       (
         'Verified / assigned',
@@ -556,14 +564,18 @@ class AdminQueueTab extends StatelessWidget {
         create: (context) => ComplaintListCubit(
           context.read<ComplaintRepository>(),
           sort: ComplaintSort.priority,
-          statuses: const {ComplaintStatus.submitted},
+          statuses: const {
+            ComplaintStatus.submitted,
+            ComplaintStatus.underReview,
+          },
         ),
         child: const ComplaintListView(
           heroScope: 'queue',
           tableOnWide: true,
           resultsLabel: 'reports',
           presets: [
-            StatusPreset('New', {ComplaintStatus.submitted}),
+            StatusPreset('New',
+                {ComplaintStatus.submitted, ComplaintStatus.underReview}),
             StatusPreset('Verified', {ComplaintStatus.verified}),
             StatusPreset('In work', {
               ComplaintStatus.assigned,

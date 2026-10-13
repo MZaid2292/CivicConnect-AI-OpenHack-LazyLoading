@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/backend_mode.dart';
 import '../../../../core/models/app_role.dart';
 import '../../../../core/models/media_attachment.dart';
 import '../../../../core/presentation/watch_cubit.dart';
@@ -349,7 +350,9 @@ class _ActionArea extends StatelessWidget {
                   key: const Key('bidButton'),
                   onPressed: busy ? null : () => _showBidSheet(context, job),
                   icon: Icons.gavel_outlined,
-                  label: 'Submit a bid (mock)',
+                  label: context.isLiveBackend
+                      ? 'Submit a bid'
+                      : 'Submit a bid (mock)',
                 ),
               ],
             );
@@ -427,11 +430,13 @@ class _ActionArea extends StatelessWidget {
             title: 'Submitted for inspection',
             message: 'The municipality will inspect the work.');
       case JobStatus.completed:
-        return const InfoBanner(
+        return InfoBanner(
             icon: Icons.verified,
             color: AppColors.teal,
             title: 'Accepted',
-            message: 'Payment marked released (simulation).');
+            message: context.isLiveBackend
+                ? 'Simulated payment: ${job.paymentStatus.label}.'
+                : 'Payment marked released (simulation).');
       case JobStatus.openForBids || JobStatus.cancelled:
         return const SizedBox.shrink();
     }

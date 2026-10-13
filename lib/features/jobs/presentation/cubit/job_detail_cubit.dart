@@ -133,7 +133,9 @@ class JobDetailCubit extends Cubit<JobDetailState> {
   Future<void> inspect({required bool accept, required String note}) => _run(
       () => _service.inspect(actor, jobId, accept: accept, note: note),
       accept
-          ? 'Work accepted. Report resolved; simulated payment released.'
+          ? (_service.inspectionReleasesPayment
+              ? 'Work accepted. Report resolved; simulated payment released.'
+              : 'Work accepted. Report resolved.')
           : 'Rework requested. The contractor has been notified.',
       done: true);
 
@@ -141,7 +143,9 @@ class JobDetailCubit extends Cubit<JobDetailState> {
   Future<void> submitBid(int amount, int days, String note) => _run(
       () => _service.submitBid(actor, jobId,
           amount: amount, days: days, note: note),
-      'Bid submitted (mock). The municipality will review it.');
+      _service.bidsAreMock
+          ? 'Bid submitted (mock). The municipality will review it.'
+          : 'Bid submitted. The municipality will review it.');
 
   Future<void> startWork() =>
       _run(() => _service.startWork(actor, jobId), 'Work started.');

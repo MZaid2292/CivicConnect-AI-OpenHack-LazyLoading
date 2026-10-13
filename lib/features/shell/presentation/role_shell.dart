@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/backend_mode.dart';
 import '../../../core/models/app_role.dart';
 import '../../../core/presentation/watch_cubit.dart';
 import '../../../core/router/app_router.dart';
@@ -63,7 +64,9 @@ class _RoleShellState extends State<RoleShell> {
   @override
   Widget build(BuildContext context) {
     final tab = widget.tabs[_index];
-    final actor = Actor.demoFor(widget.role);
+    final live = context.isLiveBackend;
+    final actor =
+        context.read<SessionCubit>().state.actor ?? Actor.demoFor(widget.role);
     return ShellScope(
       goToTab: _select,
       child: CivicResponsiveScaffold(
@@ -76,7 +79,7 @@ class _RoleShellState extends State<RoleShell> {
         index: _index,
         onSelect: _select,
         title: tab.title ?? tab.label,
-        subtitle: '${widget.role.label} · demo',
+        subtitle: live ? widget.role.label : '${widget.role.label} · demo',
         floatingActionButton: tab.fab,
         actions: [
           const _NotificationBell(),
@@ -100,7 +103,7 @@ class _RoleShellState extends State<RoleShell> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: context.textStyles.labelLarge),
-                    Text('Demo identity',
+                    Text(live ? widget.role.label : 'Demo identity',
                         style: context.textStyles.bodySmall
                             ?.copyWith(color: context.civic.muted)),
                   ]),
@@ -173,7 +176,9 @@ class _AccountMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final actor = Actor.demoFor(role);
+    final live = context.isLiveBackend;
+    final actor =
+        context.read<SessionCubit>().state.actor ?? Actor.demoFor(role);
     // MenuAnchor (not PopupMenuButton): its overlay belongs to the anchor, so
     // logging out — which replaces this whole shell — cannot leave a popup
     // route referencing a disposed widget.
@@ -188,7 +193,7 @@ class _AccountMenu extends StatelessWidget {
             Space.gapMd,
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(actor.name, style: context.textStyles.labelLarge),
-              Text('${role.label} · demo identity',
+              Text(live ? role.label : '${role.label} · demo identity',
                   style: context.textStyles.bodySmall
                       ?.copyWith(color: context.civic.muted)),
             ]),
@@ -203,7 +208,7 @@ class _AccountMenu extends StatelessWidget {
         MenuItemButton(
           leadingIcon: const Icon(Icons.logout),
           onPressed: () => context.read<SessionCubit>().logout(),
-          child: const Text('Switch role / log out'),
+          child: Text(live ? 'Log out' : 'Switch role / log out'),
         ),
       ],
       builder: (context, controller, _) => IconButton(

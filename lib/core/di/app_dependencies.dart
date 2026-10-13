@@ -27,6 +27,7 @@ import '../config/app_config.dart';
 import '../data/demo_seed.dart';
 import '../services/location_service.dart';
 import '../services/media_picker_service.dart';
+import '../services/reverse_geocoder.dart';
 import '../supabase/db_gateway.dart';
 import '../supabase/live_sync.dart';
 import '../supabase/media_store.dart';
@@ -53,6 +54,7 @@ class AppDependencies {
     required this.jobService,
     required this.locationService,
     required this.mediaPicker,
+    required this.reverseGeocoder,
   });
 
   factory AppDependencies(
@@ -60,6 +62,7 @@ class AppDependencies {
     AppConfig config = const AppConfig(),
     LocationService? locationService,
     MediaPickerService? mediaPicker,
+    ReverseGeocoder? reverseGeocoder,
     DateTime Function()? clock,
     @visibleForTesting AuthRepository? authRepository,
   }) {
@@ -98,6 +101,7 @@ class AppDependencies {
       ),
       locationService: locationService ?? const GeolocatorLocationService(),
       mediaPicker: mediaPicker ?? ImagePickerMediaService(),
+      reverseGeocoder: reverseGeocoder ?? NominatimReverseGeocoder(),
     );
   }
 
@@ -109,6 +113,7 @@ class AppDependencies {
     AppConfig config = const AppConfig(),
     LocationService? locationService,
     MediaPickerService? mediaPicker,
+    ReverseGeocoder? reverseGeocoder,
   }) {
     final db = SupabaseDbGateway(client);
     final media = SupabaseMediaStore(client);
@@ -176,6 +181,7 @@ class AppDependencies {
       ),
       locationService: locationService ?? const GeolocatorLocationService(),
       mediaPicker: mediaPicker ?? ImagePickerMediaService(),
+      reverseGeocoder: reverseGeocoder ?? NominatimReverseGeocoder(),
     );
   }
 
@@ -195,4 +201,7 @@ class AppDependencies {
   final JobService jobService;
   final LocationService locationService;
   final MediaPickerService mediaPicker;
+
+  /// GPS → readable address for the report form (OSM Nominatim).
+  final ReverseGeocoder reverseGeocoder;
 }

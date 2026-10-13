@@ -48,6 +48,7 @@ class _CivicConnectAppState extends State<CivicConnectApp> {
         RepositoryProvider.value(value: d.jobService),
         RepositoryProvider.value(value: d.locationService),
         RepositoryProvider.value(value: d.mediaPicker),
+        RepositoryProvider.value(value: d.reverseGeocoder),
       ],
       child: MaterialApp.router(
         title: 'CivicConnect AI',

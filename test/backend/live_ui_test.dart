@@ -116,7 +116,7 @@ void main() {
     expect(auth.updatedPassword, 'brand-new-pass');
   });
 
-  testWidgets('report photos are camera-only with truthful storage text',
+  testWidgets('report photos: camera or gallery, truthful storage text',
       (tester) async {
     await bootApp(tester, auth: accounts(persisted: citizenProfile()));
     await tester.tap(find.text('Report issue'));
@@ -125,7 +125,7 @@ void main() {
     expect(find.textContaining('stays on this device'), findsNothing);
     await tapVisible(tester, find.text('Add photos'));
     expect(find.text('Take a photo'), findsOneWidget);
-    expect(find.text('Choose from gallery'), findsNothing);
+    expect(find.text('Choose from gallery'), findsOneWidget);
     expect(find.textContaining('private storage'), findsOneWidget);
   });
 }

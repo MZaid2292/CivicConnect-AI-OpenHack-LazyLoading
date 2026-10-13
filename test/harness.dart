@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:civicconnect_ai/app/app.dart';
 import 'package:civicconnect_ai/core/config/app_config.dart';
 import 'package:civicconnect_ai/core/di/app_dependencies.dart';
+import 'package:civicconnect_ai/core/services/location_service.dart';
+import 'package:civicconnect_ai/core/services/reverse_geocoder.dart';
 import 'package:civicconnect_ai/features/auth/domain/auth_repository.dart';
 import 'package:civicconnect_ai/features/auth/presentation/cubit/session_cubit.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +26,8 @@ Future<AppDependencies> bootApp(
   double keyboardInset = 0,
   String? initialLocation,
   AuthRepository? auth,
+  ReverseGeocoder? geocoder,
+  LocationService? location,
 }) async {
   if (initialLocation != null) {
     tester.platformDispatcher.defaultRouteNameTestValue = initialLocation;
@@ -44,8 +48,9 @@ Future<AppDependencies> bootApp(
   SharedPreferences.setMockInitialValues(prefs);
   final deps = AppDependencies(await SharedPreferences.getInstance(),
       config: const AppConfig.offline(),
-      locationService: FakeLocationService(),
+      locationService: location ?? FakeLocationService(),
       mediaPicker: FakeMediaPicker(),
+      reverseGeocoder: geocoder ?? FakeReverseGeocoder(),
       authRepository: auth);
   final session = SessionCubit(deps.sessionRepository, auth: auth);
   await tester.pumpWidget(BlocProvider.value(

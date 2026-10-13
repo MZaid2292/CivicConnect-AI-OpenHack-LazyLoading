@@ -66,32 +66,63 @@ class CivicAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => Size.fromHeight(subtitle == null ? 60 : 68);
 
   @override
-  Widget build(BuildContext context) => AppBar(
-        toolbarHeight: preferredSize.height,
-        leading: fallbackLocation != null &&
-                !(ModalRoute.of(context)?.canPop ?? false)
-            ? IconButton(
-                tooltip: 'Back to home',
-                icon: const BackButtonIcon(),
-                onPressed: () => context.go(fallbackLocation!),
-              )
-            : null,
-        titleSpacing: Space.lg,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-            if (subtitle != null)
-              Text(subtitle!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.textStyles.bodySmall
-                      ?.copyWith(color: context.civic.muted)),
-          ],
+  Widget build(BuildContext context) {
+    final civic = context.civic;
+    return AppBar(
+      toolbarHeight: preferredSize.height,
+      // A raised surface with a hairline edge and a slim brand accent, so the
+      // header reads as its own layer instead of blending into the page.
+      // Height is unchanged, so no body content moves.
+      backgroundColor: context.colors.surface,
+      scrolledUnderElevation: 2,
+      shadowColor: civic.shadow,
+      shape: Border(bottom: BorderSide(color: civic.border)),
+      flexibleSpace: Align(
+        alignment: Alignment.bottomCenter,
+        child: Container(
+          height: 2,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [
+              civic.heroStart,
+              civic.heroEnd,
+              civic.heroEnd.withValues(alpha: 0),
+            ], stops: const [
+              0,
+              0.55,
+              1
+            ]),
+          ),
         ),
-        actions: actions,
-      );
+      ),
+      leading:
+          fallbackLocation != null && !(ModalRoute.of(context)?.canPop ?? false)
+              ? IconButton(
+                  tooltip: 'Back to home',
+                  icon: const BackButtonIcon(),
+                  onPressed: () => context.go(fallbackLocation!),
+                )
+              : null,
+      titleSpacing: Space.lg,
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: context.textStyles.titleLarge
+                  ?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.2)),
+          if (subtitle != null)
+            Text(subtitle!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.textStyles.bodySmall?.copyWith(
+                    color: civic.muted, fontWeight: FontWeight.w500)),
+        ],
+      ),
+      actions: actions,
+    );
+  }
 }
 
 /// App bar action that shows icon + label, collapsing to an icon button

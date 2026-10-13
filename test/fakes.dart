@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:civicconnect_ai/core/services/location_service.dart';
 import 'package:civicconnect_ai/core/services/media_picker_service.dart';
+import 'package:civicconnect_ai/core/services/reverse_geocoder.dart';
 import 'package:civicconnect_ai/core/utils/geo.dart';
 
 class FakeLocationService implements LocationService {
@@ -101,3 +102,18 @@ const _png = <int>[
   0x60,
   0x82,
 ];
+
+/// Scriptable reverse geocoder (no network in tests).
+class FakeReverseGeocoder implements ReverseGeocoder {
+  FakeReverseGeocoder({this.address});
+
+  /// Returned for every lookup; null simulates a failed lookup.
+  String? address;
+  int lookups = 0;
+
+  @override
+  Future<String?> addressFor(GeoPoint point) async {
+    lookups++;
+    return address;
+  }
+}

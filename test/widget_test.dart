@@ -134,14 +134,13 @@ void main() {
     expect(find.textContaining('text-only'), findsWidgets);
   });
 
-  testWidgets('citizen report photos come from the camera only',
-      (tester) async {
+  testWidgets('citizen report photos: camera or gallery', (tester) async {
     final deps = await bootApp(tester, prefs: rolePrefs('citizen'));
     await tester.tap(find.text('Report issue'));
     await tester.pumpAndSettle();
     await tapVisible(tester, find.text('Add photos'));
     expect(find.text('Take a photo'), findsOneWidget);
-    expect(find.text('Choose from gallery'), findsNothing);
+    expect(find.text('Choose from gallery'), findsOneWidget);
     await tester.tap(find.text('Take a photo'));
     await tester.pumpAndSettle();
     final picker = deps.mediaPicker as FakeMediaPicker;
@@ -149,11 +148,18 @@ void main() {
     expect(find.byType(PhotoTile), findsOneWidget,
         reason: 'captured photo is previewed in the form');
 
+    // A photo taken earlier (e.g. offline) can be picked from the gallery.
+    await tapVisible(tester, find.byIcon(Icons.add_photo_alternate_outlined));
+    await tester.tap(find.text('Choose from gallery'));
+    await tester.pumpAndSettle();
+    expect(picker.lastSource, MediaSource.gallery);
+    expect(find.byType(PhotoTile), findsNWidgets(2));
+
     // Dismissing the sheet (cancel) adds nothing and shows no error.
     await tapVisible(tester, find.byIcon(Icons.add_photo_alternate_outlined));
     await tester.tapAt(const Offset(10, 10));
     await tester.pumpAndSettle();
-    expect(find.byType(PhotoTile), findsOneWidget);
+    expect(find.byType(PhotoTile), findsNWidgets(2));
     expect(tester.takeException(), isNull);
   });
 }

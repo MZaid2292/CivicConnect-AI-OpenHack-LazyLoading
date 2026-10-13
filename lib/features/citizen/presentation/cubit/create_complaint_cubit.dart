@@ -6,6 +6,7 @@ import '../../../../core/models/app_role.dart';
 import '../../../../core/models/media_attachment.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/services/media_picker_service.dart';
+import '../../../../core/services/reverse_geocoder.dart';
 import '../../../../core/utils/geo.dart';
 import '../../../complaints/domain/complaint.dart';
 import '../../../complaints/domain/services/category_classifier.dart';
@@ -22,6 +23,8 @@ class CreateComplaintState extends Equatable {
     this.title = '',
     this.description = '',
     this.address = '',
+    this.addressAutoFilled = false,
+    this.addressFillId = 0,
     this.category,
     this.categoryManuallySet = false,
     this.classification = const ClassificationResult.empty(),
@@ -45,6 +48,12 @@ class CreateComplaintState extends Equatable {
   final String title;
   final String description;
   final String address;
+
+  /// True while [address] is the GPS lookup result (not typed by the user).
+  final bool addressAutoFilled;
+
+  /// Bumped when the cubit fills [address], so the view updates its field.
+  final int addressFillId;
   final ComplaintCategory? category;
   final bool categoryManuallySet;
   final ClassificationResult classification;
@@ -86,6 +95,8 @@ class CreateComplaintState extends Equatable {
     String? title,
     String? description,
     String? address,
+    bool? addressAutoFilled,
+    int? addressFillId,
     ComplaintCategory? category,
     bool? categoryManuallySet,
     ClassificationResult? classification,
@@ -110,6 +121,8 @@ class CreateComplaintState extends Equatable {
         title: title ?? this.title,
         description: description ?? this.description,
         address: address ?? this.address,
+        addressAutoFilled: addressAutoFilled ?? this.addressAutoFilled,
+        addressFillId: addressFillId ?? this.addressFillId,
         category: category ?? this.category,
         categoryManuallySet: categoryManuallySet ?? this.categoryManuallySet,
         classification: classification ?? this.classification,
@@ -138,6 +151,8 @@ class CreateComplaintState extends Equatable {
         title,
         description,
         address,
+        addressAutoFilled,
+        addressFillId,
         category,
         categoryManuallySet,
         classification,
@@ -166,9 +181,11 @@ class CreateComplaintCubit extends Cubit<CreateComplaintState> {
     required MediaPickerService media,
     required Actor actor,
     required GeoPoint wardCentre,
+    ReverseGeocoder? geocoder,
     String? draftId,
   })  : _service = service,
         _location = location,
+        _geocoder = geocoder,
         _media = media,
         _actor = actor,
         _wardCentre = wardCentre,
@@ -179,6 +196,7 @@ class CreateComplaintCubit extends Cubit<CreateComplaintState> {
 
   final ComplaintService _service;
   final LocationService _location;
+  final ReverseGeocoder? _geocoder;
   final MediaPickerService _media;
   final Actor _actor;
   final GeoPoint _wardCentre;
@@ -209,6 +227,10 @@ class CreateComplaintCubit extends Cubit<CreateComplaintState> {
   }
 
   void updateText({String? title, String? description, String? address}) {
+    if (address != null && state.addressAutoFilled) {
+      // The user edited the suggestion: it is theirs now.
+      emit(state.copyWith(addressAutoFilled: false));
+    }
     emit(state.copyWith(
         title: title, description: description, address: address));
     if (title != null || description != null) _analyse();
@@ -280,11 +302,44 @@ class CreateComplaintCubit extends Cubit<CreateComplaintState> {
           location: result.point,
           locationSource: LocationSource.gps,
           locationMessage: 'Approximate GPS position captured.'));
+      await _fillAddressFrom(result.point!);
+      if (isClosed) return;
     } else {
       emit(state.copyWith(
           locating: false, locationMessage: result.failure!.message));
     }
     _refreshDuplicates();
+  }
+
+  /// Reverse-geocodes a GPS fix into the address field. A typed address is
+  /// never overwritten; an empty or previously auto-filled one is replaced.
+  /// If no address can be found, the coordinates are used so the report can
+  /// still be submitted (the user can edit them into a landmark).
+  Future<void> _fillAddressFrom(GeoPoint point) async {
+    final typedByUser =
+        state.address.trim().isNotEmpty && !state.addressAutoFilled;
+    final resolved = await _geocoder?.addressFor(point);
+    if (isClosed || state.location != point) return;
+    if (typedByUser) {
+      emit(state.copyWith(
+          locationMessage: resolved == null
+              ? 'Approximate GPS position captured. Your address was kept.'
+              : 'Approximate GPS position captured near $resolved. '
+                  'Your address was kept.'));
+      return;
+    }
+    final fallback = 'GPS ${point.latitude.toStringAsFixed(5)}, '
+        '${point.longitude.toStringAsFixed(5)}';
+    emit(state.copyWith(
+      address: resolved ?? fallback,
+      addressAutoFilled: true,
+      addressFillId: state.addressFillId + 1,
+      locationMessage: resolved == null
+          ? 'Approximate GPS position captured. The street address could not '
+              'be found — add a landmark to the coordinates if you can.'
+          : 'Approximate GPS position captured. Address filled in — you can '
+              'edit it.',
+    ));
   }
 
   void setPinnedLocation(GeoPoint point) {

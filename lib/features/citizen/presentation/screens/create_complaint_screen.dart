@@ -7,6 +7,7 @@ import '../../../../core/config/app_config.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/services/media_picker_service.dart';
+import '../../../../core/services/reverse_geocoder.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/utils/geo.dart';
@@ -34,6 +35,7 @@ class CreateComplaintScreen extends StatelessWidget {
           media: context.read<MediaPickerService>(),
           actor: context.read<SessionCubit>().state.actor!,
           wardCentre: context.read<AppConfig>().defaultCenter,
+          geocoder: context.read<ReverseGeocoder>(),
           draftId: draftId,
         ),
         child: _CreateComplaintView(isEdit: draftId != null),
@@ -62,8 +64,15 @@ class _CreateComplaintViewState extends State<_CreateComplaintView> {
     super.dispose();
   }
 
+  int _addressFillId = 0;
+
   void _listener(BuildContext context, CreateComplaintState state) {
     if (state.error != null) showMessage(context, state.error!, error: true);
+    if (state.addressFillId != _addressFillId) {
+      // GPS address lookup filled the field; it stays editable.
+      _addressFillId = state.addressFillId;
+      _address.text = state.address;
+    }
     if (!state.loadingDraft && _title.text.isEmpty && state.title.isNotEmpty) {
       // Populate the fields once after a draft finishes loading.
       _title.text = state.title;
@@ -103,11 +112,13 @@ class _CreateComplaintViewState extends State<_CreateComplaintView> {
     }
   }
 
-  /// Citizens attach evidence by taking a new photo; gallery is not offered.
+  /// Take a new photo or choose one already on the device (e.g. taken
+  /// offline earlier). Both go through the same picker, size/type checks and
+  /// private upload.
   Future<void> _pickPhoto(CreateComplaintCubit cubit) async {
-    final camera = await askCameraOrGallery(context, allowGallery: false);
-    if (camera != true) return;
-    await cubit.addPhoto(MediaSource.camera);
+    final camera = await askCameraOrGallery(context);
+    if (camera == null) return;
+    await cubit.addPhoto(camera ? MediaSource.camera : MediaSource.gallery);
   }
 
   Future<void> _pickOnMap(CreateComplaintCubit cubit) async {
@@ -124,6 +135,7 @@ class _CreateComplaintViewState extends State<_CreateComplaintView> {
         listenWhen: (a, b) =>
             (b.error != null && a.error != b.error) ||
             a.outcome != b.outcome ||
+            a.addressFillId != b.addressFillId ||
             (a.loadingDraft && !b.loadingDraft),
         listener: _listener,
         builder: (context, state) {

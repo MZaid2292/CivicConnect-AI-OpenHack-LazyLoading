@@ -17,3 +17,21 @@ supabase.local.json
 
 # Built APKs embed the Supabase anon key — never commit
 *.apk
+# Additional environment files
+.env.*
+!.env.example
+
+# Android signing credentials
+*.jks
+*.keystore
+key.properties
+
+# Local Supabase inspection exports
+supabase/schema_inspection.json
+supabase/private_inspection.json
+supabase/private_inspection.csv
+
+# Additional generated files
+.flutter-plugins
+.flutter-plugins-dependencies
+*.aab

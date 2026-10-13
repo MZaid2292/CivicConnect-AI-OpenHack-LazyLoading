@@ -156,3 +156,16 @@ We believe that a useful smart-city tool begins with something simple: **help re
 *Made for a Smart Communities Hackathon* 🏙️
 
 </div>
+
+
+
+
+
+
+## 📱 Download Android App
+
+Experience CivicConnect AI on your Android device.
+
+[⬇️ Download CivicConnect AI APK](https://github.com/MZaid2292/CivicConnect-AI-OpenHack-LazyLoading/releases/latest)
+
+> **Note:** This is a hackathon prototype. Android may ask you to allow installation from an unknown source.

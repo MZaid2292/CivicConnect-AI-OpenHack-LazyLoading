@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:civicconnect_ai/app/app.dart';
 import 'package:civicconnect_ai/core/config/app_config.dart';
 import 'package:civicconnect_ai/core/di/app_dependencies.dart';
+import 'package:civicconnect_ai/features/auth/domain/auth_repository.dart';
 import 'package:civicconnect_ai/features/auth/presentation/cubit/session_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,6 +23,7 @@ Future<AppDependencies> bootApp(
   double textScale = 1,
   double keyboardInset = 0,
   String? initialLocation,
+  AuthRepository? auth,
 }) async {
   if (initialLocation != null) {
     tester.platformDispatcher.defaultRouteNameTestValue = initialLocation;
@@ -43,8 +45,9 @@ Future<AppDependencies> bootApp(
   final deps = AppDependencies(await SharedPreferences.getInstance(),
       config: const AppConfig.offline(),
       locationService: FakeLocationService(),
-      mediaPicker: FakeMediaPicker());
-  final session = SessionCubit(deps.sessionRepository);
+      mediaPicker: FakeMediaPicker(),
+      authRepository: auth);
+  final session = SessionCubit(deps.sessionRepository, auth: auth);
   await tester.pumpWidget(BlocProvider.value(
       value: session, child: CivicConnectApp(dependencies: deps)));
   await session.restoreSession();

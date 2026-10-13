@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../backend/fake_backend.dart';
 import '../harness.dart';
 
 /// Allows a tiny pixel difference so clock-dependent text (today's date on
@@ -71,6 +72,18 @@ void main() {
       await tapVisible(tester, find.text('Skip — choose a demo role'));
       await expectLater(find.byType(MaterialApp),
           matchesGoldenFile('baseline/auth_roles_$variant.png'));
+    });
+
+    // Approved live-mode differences: real sign-in (no demo shortcuts,
+    // password recovery link).
+    testWidgets('live sign-in · $variant', (tester) async {
+      await bootApp(tester,
+          size: size,
+          brightness: brightness,
+          prefs: const {'onboarding_seen': true},
+          auth: FakeAuthRepository());
+      await expectLater(find.byType(MaterialApp),
+          matchesGoldenFile('baseline/live_login_$variant.png'));
     });
 
     for (final MapEntry(key: role, value: screens) in _screens.entries) {

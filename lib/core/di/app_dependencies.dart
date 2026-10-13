@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -59,6 +60,7 @@ class AppDependencies {
     LocationService? locationService,
     MediaPickerService? mediaPicker,
     DateTime Function()? clock,
+    @visibleForTesting AuthRepository? authRepository,
   }) {
     final now = (clock ?? DateTime.now)();
     final seed = DemoSeed(now: now, center: config.defaultCenter);
@@ -75,6 +77,9 @@ class AppDependencies {
       clock: clock,
     );
     return AppDependencies._(
+      // Tests can exercise the live auth flow over local data.
+      mode: BackendMode(live: authRepository != null),
+      authRepository: authRepository,
       config: config,
       sessionRepository: LocalSessionRepository(preferences),
       complaintRepository: complaints,

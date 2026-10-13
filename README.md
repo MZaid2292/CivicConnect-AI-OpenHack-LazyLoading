@@ -4,8 +4,34 @@ Citizens report civic issues (potholes, streetlights, garbage, drainage), the
 municipality verifies, prioritises and assigns them, and contractors deliver
 evidence-backed fixes that are inspected before the citizen sees "Resolved".
 
-**This build is frontend + local mock workflows only.** No backend, no real
-authentication, no payment gateway, no paid APIs. Supabase is a later phase.
+**Backend: Supabase** (Auth, PostgreSQL with RLS, private Storage, Realtime).
+Builds with `supabase.local.json` use real accounts and data; debug builds
+without it run a local sample workflow (used by the tests). Payments are
+**simulations only** — no money moves, there is no payment gateway.
+
+## Run against Supabase
+1. Copy `supabase.example.json` to `supabase.local.json` (git-ignored) and paste
+   the project's **anon / publishable** key. Never use the service_role key —
+   the app refuses it.
+2. Review and run `supabase/migrations/20261013_civicconnect_integration.sql`
+   in Supabase → SQL Editor (see "Database corrections" below).
+3. Supabase Dashboard → Authentication → URL Configuration → Redirect URLs: add
+   your web origin (e.g. `http://localhost:5000`) and
+   `io.supabase.civicconnect://login-callback/` (Android email links).
+4. Run:
+   ```powershell
+   flutter run -d chrome --web-port 5000 --dart-define-from-file=supabase.local.json
+   flutter run -d <android-device> --dart-define-from-file=supabase.local.json
+   flutter build web --release --dart-define-from-file=supabase.local.json
+   flutter build apk --release --dart-define-from-file=supabase.local.json
+   ```
+   Release builds without the file show a configuration error instead of
+   falling back to sample data.
+5. Accounts: public sign-up always creates a **citizen** (email confirmation
+   is enabled on the project). Municipal admins need `profiles.role =
+   'municipal_admin'` and a `municipality_id`, set by a trusted operator in the
+   dashboard. Contractors are approved through `verify_contractor`. Inspector
+   and finance roles have no dashboard in this app.
 
 ## Start on Windows
 1. Open the `civicconnect_ai` folder in VS Code.
@@ -37,7 +63,7 @@ authentication, no payment gateway, no paid APIs. Supabase is a later phase.
 
 The demo role survives an app restart; *Switch role / log out* clears it. Report data resets on restart.
 
-## What is real vs. simulated
+## Local sample workflow (development and tests)
 | Area | Status |
 |---|---|
 | Category classification | Real algorithm — explainable keyword/phrase weights over title + description (`KeywordCategoryClassifier`). Text only; **no image AI**. |
@@ -101,12 +127,24 @@ Complaint: `Draft → Submitted → Verified → Assigned → In progress → Aw
 
 Job (contract, separate): `Open for bids → Awarded → In progress → Completion submitted → Completed`, with `Completion submitted → Rework requested → In progress` and `Open/Awarded → Cancelled`. Payment state (simulated) is a third, separate field.
 
-### Moving to Supabase later
-Implement `ComplaintRepository`, `JobRepository`, `ContractorRepository`, `NotificationRepository`, `PriorityRulesRepository` and `SessionRepository` against Supabase and swap them in `AppDependencies`. Then:
-- Supabase Auth owns the session (`onAuthStateChange`); roles come from a protected table, not SharedPreferences. Remove the demo role selector.
-- Mirror `ComplaintWorkflow.transitions` / `JobWorkflow.transitions` in RLS policies or RPC functions.
-- Upload `MediaStorage.localMemory` photos to Storage and switch them to `remoteUpload`.
-- Never commit keys; pass them with `--dart-define`. `supabase_flutter` is listed but intentionally **not initialised**.
+### Supabase integration
+`AppDependencies.live` wires Supabase implementations of the same repository
+and service interfaces, so cubits and screens are unchanged:
+- `SupabaseAuthRepository` — sign-up/in/out, password reset, persisted session;
+  role from `profiles.role` only. `SessionCubit` exposes the real actor.
+- `SupabaseComplaintRepository`, `SupabaseJobRepository`,
+  `SupabaseContractorRepository`, `SupabaseNotificationRepository`,
+  `SupabasePriorityRulesRepository` — RLS-protected reads assembled by pure,
+  tested mappers (`ComplaintAssembler`, `JobAssembler`, `DbCodec`).
+- `SupabaseComplaintService` / `SupabaseJobService` — every privileged step is a
+  SECURITY DEFINER function (`review_complaint`, `review_duplicate`,
+  `save_priority_rule`, `assign_repair_job`, `inspect_repair`,
+  `verify_contractor`, `start_repair`, `add_repair_evidence`, `submit_repair`);
+  never a direct UPDATE.
+- Photos: private buckets, paths `complaints/{complaint_uuid}/…` and
+  `contracts/{contract_uuid}/…`, shown via signed URLs; only paths are stored.
+- `LiveSync` — Realtime + periodic refresh; caches cleared on sign-out.
+- `BackendMode` keeps labels truthful (no "demo" wording on real accounts).
 
 ## Tests
 `flutter test` runs:
@@ -116,6 +154,8 @@ Implement `ComplaintRepository`, `JobRepository`, `ContractorRepository`, `Notif
 - `test/demo_flow_test.dart` — the live-demo workflow through the real UI and dialogs.
 - `test/theme_test.dart` — light/dark token contrast (WCAG), light & dark rendering, live OS theme switching, every dashboard in dark mode.
 - `test/responsive_test.dart` — all three dashboards and the detail screens at 320, 375, 768, 1024 and 1440 px (asserting bottom bar / rail / sidebar), landscape phone, 320 px onboarding.
+- `test/backend/` — Supabase mapping (`DbCodec`, assemblers), services against an in-memory gateway (submission order and storage paths, partial upload failure, RPC parameters, blocked bidding, drafts, rules), auth/session/routing, and live-mode UI (no demo shortcuts, password recovery, deep link through sign-in, camera-only).
+- `test/golden/` — 42 visual baselines (phone light/dark, desktop) protecting the approved UI.
 - `test/forms_accessibility_test.dart` — report form at 320 px with 1.3× and 2.0× text and the keyboard open, login form at 2.0×, bid sheet at 1.5×, semantics labels.
 - `test/audit_test.dart` — every tab and detail screen of all three roles scrolled end-to-end at 320 px with 2.0× text, and in landscape at 740×360, 915×412 and 1280×800; web deep-link reloads (including role guards and the no-role case); Hero kept for in-app navigation; duplicate merge confirmation / keep separate; rules editor draft → save.
 

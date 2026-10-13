@@ -133,12 +133,16 @@ class DbCodec {
   // ---- display ids -------------------------------------------------------------
 
   /// Short, stable display id for a job uuid (jobs have no reference code).
-  static String jobRef(String uuid) =>
-      'JOB-${uuid.replaceAll('-', '').substring(0, 8).toUpperCase()}';
+  static String jobRef(String uuid) => 'JOB-${_short(uuid)}';
 
   /// Short display code for a contractor uuid.
-  static String contractorRef(String uuid) =>
-      'CTR-${uuid.replaceAll('-', '').substring(0, 8).toUpperCase()}';
+  static String contractorRef(String uuid) => 'CTR-${_short(uuid)}';
+
+  static String _short(String id) {
+    final compact = id.replaceAll('-', '');
+    return (compact.length > 8 ? compact.substring(0, 8) : compact)
+        .toUpperCase();
+  }
 
   static DateTime time(Object? v) =>
       v is String ? DateTime.parse(v).toLocal() : DateTime.now();

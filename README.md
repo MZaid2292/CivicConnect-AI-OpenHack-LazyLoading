@@ -1,166 +1,200 @@
-# CivicConnect AI — Flutter MVVM + BLoC hackathon MVP
+<div align="center">
 
-Citizens report civic issues (potholes, streetlights, garbage, drainage), the
-municipality verifies, prioritises and assigns them, and contractors deliver
-evidence-backed fixes that are inspected before the citizen sees "Resolved".
+# 🏙️ CivicConnect AI
 
-**Backend: Supabase** (Auth, PostgreSQL with RLS, private Storage, Realtime).
-Builds with `supabase.local.json` use real accounts and data; debug builds
-without it run a local sample workflow (used by the tests). Payments are
-**simulations only** — no money moves, there is no payment gateway.
+### **Report it. Track it. Fix it.**
 
-## Run against Supabase
-1. Copy `supabase.example.json` to `supabase.local.json` (git-ignored) and paste
-   the project's **anon / publishable** key. Never use the service_role key —
-   the app refuses it.
-2. Review and run `supabase/migrations/20261013_civicconnect_integration.sql`
-   in Supabase → SQL Editor (see "Database corrections" below).
-3. Supabase Dashboard → Authentication → URL Configuration → Redirect URLs: add
-   your web origin (e.g. `http://localhost:5000`) and
-   `io.supabase.civicconnect://login-callback/` (Android email links).
-4. Run:
-   ```powershell
-   flutter run -d chrome --web-port 5000 --dart-define-from-file=supabase.local.json
-   flutter run -d <android-device> --dart-define-from-file=supabase.local.json
-   flutter build web --release --dart-define-from-file=supabase.local.json
-   flutter build apk --release --dart-define-from-file=supabase.local.json
-   ```
-   Release builds without the file show a configuration error instead of
-   falling back to sample data.
-5. Accounts: public sign-up always creates a **citizen** (email confirmation
-   is enabled on the project). Municipal admins need `profiles.role =
-   'municipal_admin'` and a `municipality_id`, set by a trusted operator in the
-   dashboard. Contractors are approved through `verify_contractor`. Inspector
-   and finance roles have no dashboard in this app.
+**A smarter, more transparent way to connect citizens, municipalities, and repair contractors.**
 
-## Start on Windows
-1. Open the `civicconnect_ai` folder in VS Code.
-2. Ensure the **Flutter SDK** is installed (`flutter doctor`; developed on Flutter 3.35 / Dart 3.9).
-3. Run:
-   ```powershell
-   flutter pub get
-   flutter analyze
-   flutter test
-   flutter run -d chrome   # or an Android device/emulator
-   ```
-   (`scripts\setup_windows.bat` also works. Run `flutter create --project-name civicconnect_ai --platforms android,web .` only if the `android/` or `web/` folders are missing.)
+**Smart Communities • Civic Technology • Flutter + Supabase**
 
-## 2–3 minute live demo script
-1. **Welcome → Skip to demo role selector → Continue as Citizen.**
-2. Tap **Report issue**. Type the title *"Big potholes on Canal Road service lane"*.
-   - The **Category suggestion** card (rule-based NLP) picks *Potholes & road damage* and shows the matched words.
-   - **Estimated priority** shows the score breakdown.
-   - **Pin on map** near Canal Road (or tap *Use my location*; if permission is denied the form explains and offers manual pinning / ward centre).
-   - A **Possible duplicate** card appears for CMP-1005 with distance, category and wording overlap. Choose *Support this instead* or *Report anyway*, then **Submit**.
-3. Account menu → **Switch role / log out → Municipal Admin.**
-   - **Overview** KPIs; **Queue** already contains the new report (same in-memory repository).
-   - Open it → **Verify** (route to department) → **Assign contractor** (or **Open tender** for bids).
-   - **Duplicates** tab shows CMP-1008 vs CMP-1005 with an explained score — merge or keep.
-   - **Rules** tab: drag a slider (e.g. *Per supporter*) and watch the live preview re-rank reports; **Save & re-score**.
-4. Switch to **Contractor** → Dashboard *Next actions* → **JOB-504** → **Start work** → **Add after photo** → **Request inspection**. Try **Available** to submit a mock bid on JOB-505.
-5. Switch to **Admin** → Overview *Ready for inspection* → **Inspect** → compare before/after → **Accept & resolve** (or **Request rework**).
-6. Switch to **Citizen** → My reports → **CMP-1001** (resolved) → rate ★★★★★. **Transparency** tab shows the public activity log.
+[The Problem](#-the-problem) • [Our Solution](#-our-solution) • [How It Works](#-how-it-works) • [Features](#-key-features) • [Technology](#-technology-stack) • [Demo](#-demo-video)
 
-The demo role survives an app restart; *Switch role / log out* clears it. Report data resets on restart.
+</div>
 
-## Local sample workflow (development and tests)
-| Area | Status |
+---
+
+## 🚨 The Problem
+
+A broken streetlight, overflowing garbage, or a dangerous pothole may look like a small issue—until it affects an entire neighborhood.
+
+Yet reporting civic problems can be frustrating:
+
+- **No clear reporting channel:** Citizens may not know where or how to report a local issue.
+- **Limited visibility:** After reporting, people often cannot easily follow what happens next.
+- **Slow coordination:** Municipal teams need to review issues and coordinate with the people responsible for repairs.
+- **Weak accountability:** Without a clear trail of updates and proof of work, it can be difficult to see whether an issue was actually resolved.
+- **Repeated reports:** Multiple residents may report the same problem, making prioritization harder.
+
+**The core challenge:** How can a city turn a citizen's complaint into a visible, accountable repair process?
+
+## 💡 Our Solution
+
+**CivicConnect AI** is a mobile-first civic complaint management platform that brings **citizens, municipal administrators, and verified contractors** into a connected workflow.
+
+A citizen reports an issue with a photo and location. A municipal administrator reviews and assigns the complaint. An approved contractor performs the repair and provides evidence. The municipality verifies the outcome, while the citizen can follow the complaint through its status timeline.
+
+Rather than treating a complaint as a one-time message, CivicConnect AI treats it as a **trackable service request—from submission to resolution**.
+
+> **One platform. Three roles. A more accountable path to better neighborhoods.**
+
+## 🔄 How It Works
+
+```mermaid
+flowchart TD
+    A[Citizen reports a civic issue] --> B[Photo, category and location captured]
+    B --> C[Automatic classification and priority scoring]
+    C --> D[Municipal administrator reviews complaint]
+    D --> E{Verified?}
+    E -->|No| F[Complaint rejected with status recorded]
+    E -->|Yes| G[Approved contractor assigned]
+    G --> H[Contractor performs repair]
+    H --> I[Before and after evidence submitted]
+    I --> J[Municipal inspection]
+    J --> K{Accepted?}
+    K -->|Needs more work| H
+    K -->|Yes| L[Complaint resolved]
+    L --> M[Citizen follows final status and evidence]
+```
+
+### 👤 Citizen
+
+**Spot a problem → Report it → Follow its progress.**
+
+Citizens can sign up, submit location-based complaints, attach photos, and track complaint stages. The platform supports everyday issues such as **potholes, faulty streetlights, and garbage**. Community interactions and feedback help make reported problems visible.
+
+### 🏛️ Municipal Administrator
+
+**Review reports → Prioritize → Assign → Verify.**
+
+Authorized municipal staff review incoming complaints, verify their validity, examine potential duplicates, assign work to approved contractors, and inspect submitted repairs before marking complaints resolved.
+
+### 🦺 Contractor
+
+**Apply → Get approved → Repair → Submit proof.**
+
+Contractors register their business, select a municipality, and wait for municipal approval. Once approved, they can access their assigned work, update progress, and submit repair evidence.
+
+## ✨ Key Features
+
+| Capability | What it delivers |
 |---|---|
-| Category classification | Real algorithm — explainable keyword/phrase weights over title + description (`KeywordCategoryClassifier`). Text only; **no image AI**. |
-| Duplicate detection | Real algorithm — Haversine distance (≤300 m), category match, Jaccard token similarity (`DuplicateDetector`). Falls back to text-only matching when no precise location. |
-| Priority | Real algorithm — category base + severity words + supporters + days open, thresholds editable by admins (`PriorityEngine`, `PriorityRules`). |
-| Workflow rules | Real state machines with role checks (`ComplaintWorkflow`, `JobWorkflow`), enforced in services **and** mock repositories. Client checks are **not** a security boundary — the backend must enforce them. |
-| Login / sign-up | **Mock forms** — format validation only; nothing is stored or sent. |
-| Demo role | SharedPreferences stores the chosen *demo role* and an onboarding flag only — **not identity, not authentication**. |
-| Data | In-memory seeded repositories (10 reports, 6 jobs, 4 contractors); resets on restart. |
-| Photos | Picked via `image_picker`, held **in memory only**, labelled "Local only · not uploaded". Seed images are labelled illustrations. |
-| Payments / earnings | **Simulation labels only** (Held / Released). No money moves. |
-| Maps | `flutter_map` + OpenStreetMap tiles with attribution; tile URL configurable in `AppConfig` (set `null` for offline grid). No bulk tile requests. |
+| 🔐 **Role-based access** | Separate, secured experiences for citizens, municipal admins, and approved contractors |
+| 📍 **Location-aware reports** | GPS coordinates and map-based context for complaints |
+| 📷 **Photo evidence** | Visual documentation of reported issues and repair progress |
+| 🧠 **Smart categorization** | Rule-based keyword classification of common civic problems |
+| 🚦 **Priority scoring** | Server-side scoring using issue category and safety-related terms |
+| 🔎 **Duplicate suggestions** | Flags potentially related complaints using distance, category, and text similarity |
+| ✅ **Municipal verification** | Complaint review, contractor assignment, and repair inspection |
+| 🛠️ **Repair accountability** | Contractor progress and before/after repair evidence |
+| 🕒 **Status timeline** | A traceable history of complaint status updates |
+| 📱 **Mobile-first design** | Flutter UI with light/dark theme support and responsive layouts |
 
-## Design system
-Material 3 with custom tokens, in `lib/core/theme/`:
-- `app_theme.dart` — complete light **and** dark `ColorScheme`s (Civic Blue primary, Teal secondary, Emerald tertiary), typography scale, and component themes (cards, inputs, buttons, chips, navigation, dialogs, sheets, menus, snackbars). `CivicPalette` (a `ThemeExtension`) adds muted/subtle text, borders, semantic success/warning/danger/info, hero gradient and shadows; `palette.tone(hue)` lightens status hues for dark surfaces. Read via `context.colors`, `context.textStyles`, `context.civic`.
-- `tokens.dart` — spacing (`Space`), radii (`Radii`), breakpoints (`Breakpoints`: 600 / 900 / 1200), and motion (`Motion.of(context, …)` returns zero when the OS asks to reduce motion).
+### What makes CivicConnect AI different?
 
-**Light/dark mode follows the operating system** (`themeMode: ThemeMode.system`) and updates live when the OS setting changes. It is intentionally *not* stored in SharedPreferences. Status/navigation bar icon brightness follows the theme. OSM tiles are darkened with `darkModeTileBuilder` in dark mode.
+**It's not just a complaint form.** It connects the people reporting a problem with the people responsible for solving it—and provides a process to follow the work all the way to resolution.
 
-Reusable components (`lib/core/widgets/`): `CivicAppBar`, `CivicCard`, `CivicHeroCard`, `CivicButton`, `CivicTextField`, `CivicStatCard`, `CivicSectionHeader`, `CivicEmptyState`, `CivicLoadingState`, `CivicErrorState`, `CivicIconBadge`, `CivicAvatar`, `InfoBanner`, `Pill`, `AdaptiveGrid`, `CivicResponsiveScaffold`, `CivicBottomNavigation`, `CivicNavigationRail`, `CivicImagePickerCard`, `EvidenceGallery`. Complaint-specific: `CivicComplaintCard`, `CivicStatusBadge`, `CivicTimeline`, `StatusTracker`, `PriorityMeter`, `SmartInsightCard`, `CategoryMatchBars`.
+The platform also uses **rule-based intelligence** for initial categorization, priority, and duplicate suggestions. It does **not** claim to use a trained machine-learning classifier; its approach is intentionally lightweight and practical for a hackathon MVP.
 
-Responsive navigation: bottom bar below 600 px, navigation rail 600–1199 px, full sidebar from 1200 px. On short windows (landscape phones) the rail hides its header and unselected labels and can scroll. The admin queue switches to a table from ~960 px content width. Orientation is never locked.
+## 🧰 Technology Stack
 
-Large text: layouts are checked at 320 px with 2.0× text. Short labels (pills, buttons, captions) get an extra line instead of being cut off (`adaptiveLines`), and app bar actions collapse to icon buttons with tooltips (`CivicAppBarAction`).
+| Layer | Technology |
+|---|---|
+| Cross-platform application | **Flutter / Dart** |
+| State management | **BLoC / Cubit** |
+| Application structure | **Feature-first MVVM** |
+| Navigation | **GoRouter** |
+| Authentication | **Supabase Auth** |
+| Database and authorization | **Supabase PostgreSQL + Row Level Security** |
+| Media storage | **Supabase Storage** (private buckets) |
+| Location and mapping | **Device GPS + OpenStreetMap-based map** |
+| Preferences and local state | **SharedPreferences** where appropriate |
+| Smart complaint processing | **PostgreSQL functions and triggers** |
 
-Web URLs: pushed screens update the address bar (`GoRouter.optionURLReflectsImperativeAPIs`), and a reload of a deep link such as `/complaint/CMP-1001` waits for the demo session to restore (`/loading?from=…`), then opens that screen. Role guards still apply. With no saved demo role, the role selector is shown first. The card-to-detail Hero animation only runs for in-app navigation; a fresh load has no source card, so it's skipped. Detail screens opened directly show a back button that goes home.
+## 🔒 Security and Trust
 
-## Architecture
-MVVM + flutter_bloc. Views never call repositories in `build`; Cubits subscribe to repository streams.
+CivicConnect AI separates public registration from privileged access:
 
+- New citizen accounts do not choose their own privileged database role.
+- Municipal administrator accounts are provisioned through trusted administration.
+- Contractor applications require municipal approval before contractor access is granted.
+- Supabase Row Level Security and server-side checks protect key workflows.
+- Complaint and repair images are stored in private storage buckets.
+
+## 🎬 Demo Video
+
+**The full app experience is presented in our demo video rather than screenshots in this README.**
+
+**▶️ Demo video:** _Add your video URL here before submission._
+
+### Suggested walkthrough
+
+1. Citizen signs in and submits a pothole complaint with location and photo.
+2. Municipal admin reviews the complaint and assigns an approved contractor.
+3. Contractor opens the job, records progress, and submits repair evidence.
+4. Admin inspects and accepts the completed repair.
+5. Citizen checks the resolved status and timeline.
+
+## 🚀 Run Locally
+
+### Prerequisites
+
+- Flutter SDK installed
+- An existing, configured Supabase project with the CivicConnect AI schema, policies, functions and storage buckets
+- A valid Supabase project URL and **publishable/anon** key
+- An Android device or supported browser
+
+### Setup
+
+```bash
+git clone <YOUR_REPOSITORY_URL>
+cd civicconnect_ai
+flutter pub get
 ```
-lib/
-  app/app.dart                  MultiRepositoryProvider + MaterialApp.router
-  core/
-    config/app_config.dart      tile URL, default map centre (non-secret)
-    di/app_dependencies.dart    composition root — ONE instance of each repo/service
-    data/                       InMemoryCollection (reactive store), DemoSeed
-    models/                     AppRole + demo Actor, MediaAttachment, WorkflowException, permissions
-    presentation/watch_cubit.dart  generic stream → loading/ready/failure view model
-    router/app_router.dart      go_router + session redirect & role guards
-    services/                   LocationService (geolocator), MediaPickerService (image_picker)
-    theme/, utils/, widgets/    design system, geo/text/formatting, shared widgets & map
-  features/
-    auth/          session repo (demo role), SessionCubit, welcome/login/role screens
-    complaints/    domain: Complaint, ComplaintWorkflow, repository contracts,
-                   services (classifier, duplicates, priority, ComplaintService)
-                   data: mock repositories; presentation: list/detail cubits, widgets
-    jobs/          domain: WorkJob (contract + simulated payment state), Contractor,
-                   JobWorkflow, JobService; data: mocks; presentation: job detail
-    citizen/       create/edit-draft form view model, location picker, citizen tabs
-    admin/         dashboard stats, queue, duplicate review, work/contractors, rules editor, inspection
-    contractor/    dashboard, available tenders, my jobs, profile, mock earnings
-    notifications/ in-app inbox
-    transparency/  public stats + activity log
-    shell/         responsive role shell (bottom bar < 600 px, rail, sidebar ≥ 1200 px)
+
+Create **`supabase.local.json`** in the project root using the same field names as `supabase.example.json`:
+
+```json
+{
+  "SUPABASE_URL": "YOUR_SUPABASE_PROJECT_URL",
+  "SUPABASE_ANON_KEY": "YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY"
+}
 ```
 
-### State machines
-Complaint: `Draft → Submitted → Verified → Assigned → In progress → Awaiting inspection → Resolved`, with `Submitted/Verified → Rejected | Merged duplicate` and `Awaiting inspection → Rework required → In progress`.
+**Never commit** `supabase.local.json`, a service-role key, or private credentials.
 
-Job (contract, separate): `Open for bids → Awarded → In progress → Completion submitted → Completed`, with `Completion submitted → Rework requested → In progress` and `Open/Awarded → Cancelled`. Payment state (simulated) is a third, separate field.
+Run the live application:
 
-### Supabase integration
-`AppDependencies.live` wires Supabase implementations of the same repository
-and service interfaces, so cubits and screens are unchanged:
-- `SupabaseAuthRepository` — sign-up/in/out, password reset, persisted session;
-  role from `profiles.role` only. `SessionCubit` exposes the real actor.
-- `SupabaseComplaintRepository`, `SupabaseJobRepository`,
-  `SupabaseContractorRepository`, `SupabaseNotificationRepository`,
-  `SupabasePriorityRulesRepository` — RLS-protected reads assembled by pure,
-  tested mappers (`ComplaintAssembler`, `JobAssembler`, `DbCodec`).
-- `SupabaseComplaintService` / `SupabaseJobService` — every privileged step is a
-  SECURITY DEFINER function (`review_complaint`, `review_duplicate`,
-  `save_priority_rule`, `assign_repair_job`, `inspect_repair`,
-  `verify_contractor`, `start_repair`, `add_repair_evidence`, `submit_repair`);
-  never a direct UPDATE.
-- Photos: private buckets, paths `complaints/{complaint_uuid}/…` and
-  `contracts/{contract_uuid}/…`, shown via signed URLs; only paths are stored.
-- `LiveSync` — Realtime + periodic refresh; caches cleared on sign-out.
-- `BackendMode` keeps labels truthful (no "demo" wording on real accounts).
+```bash
+flutter run --dart-define-from-file=supabase.local.json
+```
 
-## Tests
-`flutter test` runs:
-- `test/domain/nlp_services_test.dart` — classifier, Jaccard, duplicate detector (incl. GPS fallback), priority engine & configurable rules.
-- `test/domain/workflow_test.dart` — illegal transitions, role permissions, full lifecycle incl. rework loop, tender→bid→award, duplicate merge, rules re-scoring, contractor approval.
-- `test/widget_test.dart` — onboarding, role restore + logout, all dashboards at phone and desktop widths, report creation reaching the admin queue, GPS-denied fallback, duplicate warning.
-- `test/demo_flow_test.dart` — the live-demo workflow through the real UI and dialogs.
-- `test/theme_test.dart` — light/dark token contrast (WCAG), light & dark rendering, live OS theme switching, every dashboard in dark mode.
-- `test/responsive_test.dart` — all three dashboards and the detail screens at 320, 375, 768, 1024 and 1440 px (asserting bottom bar / rail / sidebar), landscape phone, 320 px onboarding.
-- `test/backend/` — Supabase mapping (`DbCodec`, assemblers), services against an in-memory gateway (submission order and storage paths, partial upload failure, RPC parameters, blocked bidding, drafts, rules), auth/session/routing, and live-mode UI (no demo shortcuts, password recovery, deep link through sign-in, camera-only).
-- `test/golden/` — 42 visual baselines (phone light/dark, desktop) protecting the approved UI.
-- `test/forms_accessibility_test.dart` — report form at 320 px with 1.3× and 2.0× text and the keyboard open, login form at 2.0×, bid sheet at 1.5×, semantics labels.
-- `test/audit_test.dart` — every tab and detail screen of all three roles scrolled end-to-end at 320 px with 2.0× text, and in landscape at 740×360, 915×412 and 1280×800; web deep-link reloads (including role guards and the no-role case); Hero kept for in-app navigation; duplicate merge confirmation / keep separate; rules editor draft → save.
+Build an Android APK:
 
-## Known limitations
-- All data is in memory; restarting the app restores the demo role but resets reports.
-- Priority "age" points are recalculated when data changes or rules are saved, not on a timer.
-- The NLP is keyword-based (English). It is explainable by design but will miss unusual phrasing; citizens can always override the category.
-- Push notifications (`flutter_local_notifications`) are not wired; the in-app inbox is.
+```bash
+flutter build apk --release --dart-define-from-file=supabase.local.json
+```
+
+The built APK is normally located at `build/app/outputs/flutter-apk/app-release.apk`.
+
+> **Note:** The Supabase backend must already be configured. Cloning the Flutter repository alone does not provision the database or create municipal administrator accounts.
+
+## 🎯 MVP Scope and Roadmap
+
+Our hackathon focus is the **complete civic complaint lifecycle**: report, verify, assign, repair, inspect, and resolve.
+
+Potential future extensions include advanced AI-based image recognition, richer municipal analytics, automated public notifications, competitive tendering, and production-scale deployment.
+
+We believe that a useful smart-city tool begins with something simple: **help residents be heard, and make progress visible.**
+
+---
+
+<div align="center">
+
+### **CivicConnect AI**
+
+**Building smarter communities through transparency, coordination, and action.**
+
+*Made for a Smart Communities Hackathon* 🏙️
+
+</div>

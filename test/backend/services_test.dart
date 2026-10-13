@@ -344,6 +344,58 @@ void main() {
           throwsA(predicate((e) => '$e'.contains('not available yet'))));
       expect(b.db.rpcCalls, isEmpty);
     });
+
+    Backend withPendingApplication() {
+      final b = Backend(user: 'admin-1');
+      b.db.table('contractors').add({
+        'id': 'ctr-muet',
+        'owner_id': 'owner-muet',
+        'business_name': 'muet',
+        'verification_status': 'pending',
+        'municipality_id': 'khairpur',
+        'created_at': '2026-10-13T00:00:00Z',
+      });
+      return b;
+    }
+
+    test('approve calls verify_contractor and shows the server result',
+        () async {
+      final b = withPendingApplication();
+      b.db.rpcHandlers['verify_contractor'] = (p) {
+        // What the database function does on success.
+        b.db.table('contractors').single['verification_status'] =
+            p['p_decision'];
+        return null;
+      };
+      await b.jobService.setContractorStatus(
+          adminActor, 'ctr-muet', ContractorStatus.approved);
+      final call = b.db.rpcCalls.single;
+      expect(call.$1, 'verify_contractor');
+      expect(call.$2, {
+        'p_contractor_id': 'ctr-muet',
+        'p_decision': 'approved',
+        'p_remarks': null,
+      });
+      expect((await b.contractors.findById('ctr-muet'))!.status,
+          ContractorStatus.approved,
+          reason: 'the list is reloaded from the server after approval');
+    });
+
+    test('a refused approval surfaces the server message, never success',
+        () async {
+      final b = withPendingApplication();
+      b.db.rpcHandlers['verify_contractor'] = (_) => throw translateDbError(
+          const PostgrestException(
+              message: 'Contractor belongs to another municipality',
+              code: 'P0001'));
+      await expectLater(
+          b.jobService.setContractorStatus(
+              adminActor, 'ctr-muet', ContractorStatus.approved),
+          throwsA(predicate(
+              (e) => '$e' == 'Contractor belongs to another municipality')));
+      expect((await b.contractors.findById('ctr-muet'))!.status,
+          ContractorStatus.pendingApproval);
+    });
   });
 
   group('contractor workflow', () {

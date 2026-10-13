@@ -135,49 +135,7 @@ CivicConnect AI separates public registration from privileged access:
 4. Admin inspects and accepts the completed repair.
 5. Citizen checks the resolved status and timeline.
 
-## 🚀 Run Locally
 
-### Prerequisites
-
-- Flutter SDK installed
-- An existing, configured Supabase project with the CivicConnect AI schema, policies, functions and storage buckets
-- A valid Supabase project URL and **publishable/anon** key
-- An Android device or supported browser
-
-### Setup
-
-```bash
-git clone <YOUR_REPOSITORY_URL>
-cd civicconnect_ai
-flutter pub get
-```
-
-Create **`supabase.local.json`** in the project root using the same field names as `supabase.example.json`:
-
-```json
-{
-  "SUPABASE_URL": "YOUR_SUPABASE_PROJECT_URL",
-  "SUPABASE_ANON_KEY": "YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY"
-}
-```
-
-**Never commit** `supabase.local.json`, a service-role key, or private credentials.
-
-Run the live application:
-
-```bash
-flutter run --dart-define-from-file=supabase.local.json
-```
-
-Build an Android APK:
-
-```bash
-flutter build apk --release --dart-define-from-file=supabase.local.json
-```
-
-The built APK is normally located at `build/app/outputs/flutter-apk/app-release.apk`.
-
-> **Note:** The Supabase backend must already be configured. Cloning the Flutter repository alone does not provision the database or create municipal administrator accounts.
 
 ## 🎯 MVP Scope and Roadmap
 

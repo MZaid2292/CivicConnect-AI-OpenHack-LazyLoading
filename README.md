@@ -157,7 +157,7 @@ For security reasons, municipal administrators must be provisioned through the t
 
 **Demo Administrator Email:** `admin@municipal.com`
 
-**Password:** Provided privately to hackathon judges.
+**Password:** Admin@123.
 
 **Steps:**
 1. Open CivicConnect AI.

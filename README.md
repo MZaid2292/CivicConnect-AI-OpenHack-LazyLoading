@@ -127,6 +127,82 @@ CivicConnect AI separates public registration from privileged access:
 
 **▶️ Demo video & APK:** [Watch the demo video and download the Android APK](https://drive.google.com/drive/folders/19gAUB2PjAhMgqque7zEQSkHMpZ8Mth9Z)
 
+
+## 🧪 Testing Guide for Hackathon Judges
+
+CivicConnect AI supports three user roles: **Citizen, Municipal Administrator, and Contractor**. Each role has a different registration and authentication workflow.
+
+### 👤 1. Citizen — Self-Registration
+
+Judges can create their own Citizen account and test the application.
+
+**Steps:**
+1. Open the CivicConnect AI application.
+2. Select **Citizen**.
+3. Choose **Sign Up**.
+4. Enter your details and a valid, accessible email address.
+5. A confirmation email will be sent to your email inbox.
+6. Open the email and click the verification link.
+7. Return to the app and sign in using your registered credentials.
+
+**Important:** Use an email address you can access because email confirmation is required before signing in.
+
+After signing in, citizens can submit complaints, attach photos, provide GPS locations, and track complaint progress.
+
+### 🏛️ 2. Municipal Administrator — Preconfigured Account
+
+Municipal administrator accounts are **not available for public self-registration**.
+
+For security reasons, municipal administrators must be provisioned through the trusted backend.
+
+**Demo Administrator Email:** `admin@municipal.com`
+
+**Password:** Provided privately to hackathon judges.
+
+**Steps:**
+1. Open CivicConnect AI.
+2. Select **Municipal Administrator**.
+3. Enter the provided administrator email and password.
+4. Sign in to access the municipal dashboard.
+
+The municipal administrator can:
+- Review and verify citizen complaints.
+- Review contractor registration applications.
+- Approve or reject contractor applications.
+- Assign complaints to approved contractors.
+- Monitor repair progress and inspect submitted evidence.
+
+**Note:** Judges must use the provided administrator credentials. Creating an ordinary Citizen or Contractor account does not grant municipal administrator privileges.
+
+### 🦺 3. Contractor — Registration with Municipal Approval
+
+Contractors can register independently, but their accounts require approval from a municipal administrator before contractor access is granted.
+
+**Steps:**
+1. Open CivicConnect AI.
+2. Select **Contractor**.
+3. Choose **Sign Up**.
+4. Enter the required business and account information.
+5. Select the relevant municipality.
+6. Submit the registration application.
+7. Wait for the municipal administrator to review and approve the application.
+8. Once approved, sign in using the registered contractor credentials.
+
+**Important:** A newly registered contractor cannot access approved contractor functionality until the municipal administrator approves the application.
+
+After approval, contractors can view assigned complaints, update repair progress, and submit repair evidence.
+
+### 🔄 Recommended End-to-End Testing Workflow
+
+1. **Citizen:** Register, verify email, sign in, and submit a complaint with a photo and GPS location.
+2. **Municipal Admin:** Sign in using the provided demo credentials, review the complaint, and assign an approved contractor.
+3. **Contractor:** Sign in after approval, view the assigned complaint, update progress, and submit repair evidence.
+4. **Municipal Admin:** Review the completed repair and verify the outcome.
+5. **Citizen:** Sign in again to check the updated complaint status and timeline.
+
+> **Demo Access:** The Android APK and demonstration video are available in the Demo Video and APK section above. Administrator credentials are shared privately with authorized hackathon judges.
+
+
 ### Suggested walkthrough
 
 1. Citizen signs in and submits a pothole complaint with location and photo.

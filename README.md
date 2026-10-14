@@ -125,7 +125,7 @@ CivicConnect AI separates public registration from privileged access:
 
 **The full app experience is presented in our demo video rather than screenshots in this README.**
 
-**▶️ Demo video & APK:** [_Add your video URL here before submission._](https://drive.google.com/drive/folders/19gAUB2PjAhMgqque7zEQSkHMpZ8Mth9Z)
+**▶️ Demo video & APK:** [Watch the demo video and download the Android APK](https://drive.google.com/drive/folders/19gAUB2PjAhMgqque7zEQSkHMpZ8Mth9Z)
 
 ### Suggested walkthrough
 
@@ -143,6 +143,21 @@ Our hackathon focus is the **complete civic complaint lifecycle**: report, verif
 
 Potential future extensions include advanced AI-based image recognition, richer municipal analytics, automated public notifications, competitive tendering, and production-scale deployment.
 
+### Planned Future Enhancements (Not Part of the Current MVP)
+
+The following capabilities are **planned for future development** and are **not claimed as implemented or available in the current APK**:
+
+- **Open Tender System:** Municipal administrators could publish public repair tenders, including project scope, eligibility criteria, deadlines, and required documentation.
+- **Contractor Bidding and Tender Evaluation:** Verified contractors could discover open tenders, submit competitive bids and proposals, and track bid status. Municipal teams could review submissions and select contractors through a transparent approval process.
+- **Work Orders and Budget Management:** Future tender awards could be connected to formal work orders, estimated repair costs, approved budgets, and expenditure records.
+- **Contractor Payment Management:** Payments could be requested and approved against completed, municipality-verified work, with payment status, transaction history, and audit records.
+- **Secure Digital Payment Integration:** Integration with a supported payment gateway or banking service could enable authorized contractor payouts and payment confirmations, subject to financial and security requirements.
+- **Payment Tracking and Approval Workflow:** Municipal administrators could review invoices, verify supporting repair evidence, authorize payments, and track pending, approved, and completed transactions.
+- **Advanced AI Image Recognition:** A future image-analysis model could assist with automatically identifying civic issue types and assessing damage from uploaded photos.
+- **Municipal Analytics and Reporting:** Dashboards could visualize complaints by area and category, response times, contractor performance, repair costs, and budget usage.
+- **Automated Notifications:** Push, email, or SMS notifications could inform citizens and contractors about complaint updates, job assignments, tenders, and payment milestones.
+- **Production-Scale Deployment:** Additional performance, monitoring, security, accessibility, and operational improvements would be needed before city-wide deployment.
+
 We believe that a useful smart-city tool begins with something simple: **help residents be heard, and make progress visible.**
 
 ---
@@ -156,10 +171,3 @@ We believe that a useful smart-city tool begins with something simple: **help re
 *Made for a Smart Communities Hackathon* 🏙️
 
 </div>
-
-
-
-
-
-
-

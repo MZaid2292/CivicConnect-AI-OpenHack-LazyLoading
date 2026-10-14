@@ -121,11 +121,11 @@ CivicConnect AI separates public registration from privileged access:
 - Supabase Row Level Security and server-side checks protect key workflows.
 - Complaint and repair images are stored in private storage buckets.
 
-## 🎬 Demo Video
+## 🎬 Demo Video and APK
 
 **The full app experience is presented in our demo video rather than screenshots in this README.**
 
-**▶️ Demo video:** _Add your video URL here before submission._
+**▶️ Demo video & APK:** [_Add your video URL here before submission._](https://drive.google.com/drive/folders/19gAUB2PjAhMgqque7zEQSkHMpZ8Mth9Z)
 
 ### Suggested walkthrough
 
